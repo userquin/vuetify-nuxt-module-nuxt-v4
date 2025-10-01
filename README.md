@@ -12,10 +12,10 @@ This new version includes:
 - removed all Vite plugins, now the configuration is merged directly and exposed by Nuxt "virtual" modules and now it is statically analizable:
   - use `#build/vuetify/configuration.mjs` to access the configuration
   - use `#build/vuetify/ssr-client-hints-configuration.mjs` to access the SSR Client hints configuration
-  - use `defineVuetifyConfiguration` from `vuetify-nuxt-module/custom-configuration` to add `vuetify.config.[m][tj]s` file at Nuxt root folder or layers.
+  - use `defineVuetifyConfiguration` from `vuetify-nuxt-module/custom-configuration` to add `vuetify.config.[m]?[tj]s` file at Nuxt root folder or layers.
 - added support for the new [Vuetify validation rules](https://vuetifyjs.com/en/features/rules/#validation-rules):
   - use `#build/vuetify/labs-rules-configuration.mjs` to access the configuration
-  - use `defineVuetifyLabsRulesConfiguration` from `vuetify-nuxt-module/custom-labs-rules-configuration` to add `vuetify.rules.[m][tj]s` file at Nuxt root folder or layers
+  - use `defineVuetifyLabsRulesConfiguration` from `vuetify-nuxt-module/custom-labs-rules-configuration` to add `vuetify.rules.[m]?[tj]s` file at Nuxt root folder or layers
   - enable the new `enableVuetifyRules` option, and the module will register the Vuetify Rules Vue plugin for you
 - included `defineVuetifyConfiguration` and `defineVuetifyLabsRulesConfiguration` to `node` references 
 
@@ -30,7 +30,7 @@ You can play here with the playground workspace (latest Nuxt 4 with Nuxt 3 layou
 - `pnpm dev:prepare` to prepare the playground
 - `pnpm dev` to start the Nuxt development server
 
-You can also play with [this Nuxt 4 playground repository](https://github.com/userquin/vuetify-nuxt-module-nuxt-v4-playground) with latest Nuxt 4 layout, using local `vuetify-nuxt-module-1.0.0.tgz` file from this repository (`pnpm install --fronze-lockfile && pnpm pack`) and `pkg-pr-new` dependencies from [this PR](https://github.com/userquin/unvuetify-monorepo/pull/51) at `@unvuetify-monorepo` (will be merged and released a new version soon):
+You can also play with [this Nuxt 4 playground repository](https://github.com/userquin/vuetify-nuxt-module-nuxt-v4-playground) with latest Nuxt 4 layout, using local `vuetify-nuxt-module-1.0.0.tgz` file from this repository (`pnpm install --frozen-lockfile && pnpm pack`) and `pkg-pr-new` dependencies from [this PR](https://github.com/userquin/unvuetify-monorepo/pull/51) at `@unvuetify-monorepo` (will be merged and released a new version soon):
 - `pnpm install --frozen-lockfile`
 - `pnpm postinstall` to prepare the playground
 - `pnpm dev` to start the Nuxt development server
