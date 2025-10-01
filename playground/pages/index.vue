@@ -25,15 +25,15 @@ const clicks = shallowRef(0)
 function onClick() {
   clicks.value = clicks.value + 1
 }
-const enableToogleTheme = computed(() => {
+const enableToggleTheme = computed(() => {
   if (ssrClientHintsConfiguration.prefersColorScheme && ssrClientHintsConfiguration.prefersColorSchemeOptions)
     return !ssrClientHintsConfiguration.prefersColorSchemeOptions.useBrowserThemeOnly
 
   return false
 })
 
-function toogleTheme() {
-  theme.global.name.value = theme.global.name.value === 'light' ? 'dark' : 'light'
+function toggleTheme() {
+  theme.change(theme.global.name.value === 'light' ? 'dark' : 'light')
 }
 
 const dir = computed(() => isRtl.value ? 'rtl' : undefined)
@@ -79,8 +79,8 @@ watch([locale, name], ([, nn]) => {
           <div>
             <h2>useTheme: {{ theme.global.name }}</h2>
             <v-btn
-              v-if="enableToogleTheme"
-              @click="toogleTheme"
+              v-if="enableToggleTheme"
+              @click="toggleTheme"
             >
               toogle theme
             </v-btn>
