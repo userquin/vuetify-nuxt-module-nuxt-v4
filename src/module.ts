@@ -43,7 +43,7 @@ export interface ModuleRuntimeHooks {
    * This will change when `vuetify/labs/rules` moved outside labs to:
    * `import { rulesOptions } from '#build/vuetify/rules-configuration.mjs'`
    */
-  'vuetify:register-client-rules-plugin': (vuetify: ReturnType<typeof createVuetify>) => Promise<boolean> | boolean
+  // 'vuetify:register-client-rules-plugin': (vuetify: ReturnType<typeof createVuetify>) => Promise<boolean> | boolean
   'vuetify:ready': (vuetify: ReturnType<typeof createVuetify>) => HookResult
   'vuetify:ssr-client-hints': (options: {
     vuetifyOptions: VuetifyOptions
