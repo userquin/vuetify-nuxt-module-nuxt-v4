@@ -1,0 +1,94 @@
+{
+  "name": "vuetify-nuxt-module",
+  "version": "1.0.0",
+  "description": "My new Nuxt module",
+  "repository": "your-org/my-module",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/types.d.mts",
+      "import": "./dist/module.mjs"
+    },
+    "./configuration": {
+      "types": "./configuration.d.ts"
+    },
+    "./custom-configuration": "./custom-configuration.js",
+    "./labs-rules-configuration": {
+      "types": "./labs-rules-configuration.d.ts"
+    },
+    "./custom-labs-rules-configuration": "./custom-labs-rules-configuration.js"
+  },
+  "main": "./dist/module.mjs",
+  "typesVersions": {
+    "*": {
+      ".": [
+        "./dist/types.d.mts"
+      ]
+    }
+  },
+  "files": [
+    "dist",
+    "configuration.d.ts",
+    "custom-configuration.js",
+    "custom-configuration.d.ts",
+    "labs-rules-configuration.d.ts",
+    "custom-labs-rules-configuration.js",
+    "custom-labs-rules-configuration.d.ts"
+  ],
+  "scripts": {
+    "prepack": "nuxt-module-build build",
+    "dev": "pnpm dev:prepare && cd playground && pnpm dev",
+    "dev:build": "cd playground && pnpm build",
+    "dev:prepare": "nuxt-module-build build --stub && nuxt-module-build prepare && cd playground && pnpm prepare",
+    "release": "pnpm lint && pnpm test && pnpm prepack && changelogen --release && npm publish && git push --follow-tags",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest watch",
+    "test:types": "vue-tsc --noEmit && cd playground && vue-tsc --noEmit"
+  },
+  "peerDependencies": {
+    "@unvuetify/nuxt-i18n-utils": "^1.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@unvuetify/nuxt-i18n-utils": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "@nuxt/kit": "^4.1.2",
+    "@unvuetify/nuxt-utils": "^1.1.0",
+    "local-pkg": "^1.1.2",
+    "magicast": "^0.3.5",
+    "vuetify": "^3.9.0"
+  },
+  "devDependencies": {
+    "@nuxt/devtools": "^2.6.3",
+    "@nuxt/eslint-config": "^1.9.0",
+    "@nuxt/module-builder": "^1.0.2",
+    "@nuxt/schema": "^4.1.2",
+    "@nuxt/test-utils": "^3.19.2",
+    "@types/node": "latest",
+    "changelogen": "^0.6.2",
+    "eslint": "^9.35.0",
+    "nuxt": "^4.1.2",
+    "typescript": "~5.9.2",
+    "vitest": "^3.2.4",
+    "vue-tsc": "^3.0.8"
+  },
+  "build": {
+    "externals": [
+      "defu",
+      "local-pkg",
+      "chokidar",
+      "pathe",
+      "perfect-debounce",
+      "readdirp"
+    ]
+  },
+  "resolutions": {
+    "@unvuetify/nuxt-i18n-utils": "https://pkg.pr.new/@unvuetify/nuxt-i18n-utils@a348008",
+    "@unvuetify/nuxt-utils": "https://pkg.pr.new/@unvuetify/nuxt-utils@a348008",
+    "vuetify": "^3.10.2"
+  }
+}
