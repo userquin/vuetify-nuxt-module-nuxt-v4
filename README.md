@@ -20,7 +20,7 @@ This new version includes:
 
 The new module still have the existing Nuxt Runtime Hooks: check [types.ts][./src/types.ts] file for more information.
 
-The new configuration using `AsyncGenerator` to load the configuration files, check [load-configuration.ts](./src/load-configuration.ts) module.
+The new configuration using `AsyncGenerators` to load the configuration files, check [load-configuration.ts](./src/load-configuration.ts) module.
 
 ## Playgrounds
 
