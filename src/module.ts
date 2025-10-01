@@ -116,28 +116,29 @@ export default defineNuxtModule<ModuleOptions>({
         })
     }
 
+    // load configuration
+    await load(options, nuxt, ctx)
+
+    // configure HTTP Client Hints
+    prepareSSRClientHints(nuxt, ctx)
+
+    // prepare Nuxt configuration templates
+    // - HTTP Client Hints configuration
+    // - Vuetify configuration
+    addVuetifyNuxtTemplates(nuxt, ctx)
+
+    // prepare Nuxt runtime
+    // - inline styles
+    // - add types
+    // - add runtime plugins
+    // - add Vuetify client and server plugins
+    await prepareNuxtRuntime(nuxt, ctx)
+
+    // register watcher to avoid Nuxt restarts
+    registerWatcher(options, nuxt, ctx)
+    /*
     nuxt.hook('modules:done', async () => {
-      console.log(`${CONFIG_KEY} module setup v${version}`)
-      // load configuration
-      await load(options, nuxt, ctx)
-
-      // configure HTTP Client Hints
-      prepareSSRClientHints(nuxt, ctx)
-
-      // prepare Nuxt configuration templates
-      // - HTTP Client Hints configuration
-      // - Vuetify configuration
-      addVuetifyNuxtTemplates(nuxt, ctx)
-
-      // prepare Nuxt runtime
-      // - inline styles
-      // - add types
-      // - add runtime plugins
-      // - add Vuetify client and server plugins
-      await prepareNuxtRuntime(nuxt, ctx)
-
-      // register watcher to avoid Nuxt restarts
-      registerWatcher(options, nuxt, ctx)
     })
+*/
   },
 })
