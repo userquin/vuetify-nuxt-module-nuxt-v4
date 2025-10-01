@@ -3,12 +3,12 @@ import type { ProxifiedObject } from 'magicast'
 import type { VuetifyOptions } from 'vuetify/framework'
 import type { VuetifyNuxtContext, VuetifyOptionsInfo } from './context'
 import type { ExternalVuetifyOptions, MOptions, VuetifyModuleOptions } from './types'
-import fs from 'node:fs'
 import fsp from 'node:fs/promises'
-import { resolve } from 'node:path'
+import { resolve } from 'pathe'
 import defu from 'defu'
 import { parseModule } from 'magicast'
 import { getDefaultExportOptions } from 'magicast/helpers'
+import { createImportMap, extractImports, mergeConfiguration, readConfigurationFile } from './utils'
 
 export async function prepareConfiguration(
   nuxt: Nuxt,
@@ -16,12 +16,6 @@ export async function prepareConfiguration(
   vuetifyConfigurationFilesToWatch: Set<string>,
   options: VuetifyModuleOptions,
 ) {
-  let inlineModules: MOptions[] = []
-  await nuxt.callHook(
-    'vuetify:registerModule',
-    ({ moduleOptions }) => (moduleOptions && inlineModules.push(moduleOptions)),
-  )
-
   const root = await loadRootLayer(
     nuxt,
     ctx,
@@ -30,23 +24,23 @@ export async function prepareConfiguration(
   )
 
   let moduleOptions: MOptions = {}
-  for (const mod of inlineModules) {
-    moduleOptions = defu(mod, moduleOptions)
-  }
-
   const layers = nuxt.options._layers.length
 
   if (layers === 1) {
+    extractImports(
+      (imp, impl) => ctx.imports.set(imp, impl),
+      root.vuetifyOptions,
+      root.importsMap,
+    )
     ctx.moduleOptions = defu(options.moduleOptions ?? {}, moduleOptions)
     ctx.vuetifyOptions = root
     return
   }
 
-  inlineModules = []
-
+  const inlineModules: MOptions[] = []
   let lastLayer: VuetifyOptionsInfo<VuetifyOptions> | undefined
   for (let i = layers - 1; i > 0; i--) {
-    const layer = nuxt.options._layers[i]
+    const layer = nuxt.options._layers[i]!
     const config = layer.config
     if (hasLayerVuetifyConfiguration(config)) {
       const mOptions = config.vuetify?.moduleOptions
@@ -55,13 +49,19 @@ export async function prepareConfiguration(
       }
     }
     const nextLayer = await loadLayer(
+      nuxt,
       ctx,
       layer,
       vuetifyConfigurationFilesToWatch,
     )
     if (lastLayer) {
       if (nextLayer) {
-        mergeConfiguration(ctx, lastLayer.vuetifyOptions, nextLayer.vuetifyOptions)
+        mergeConfiguration(
+          (imp, impl) => ctx.imports.set(imp, impl),
+          lastLayer.vuetifyOptions,
+          nextLayer.vuetifyOptions,
+          nextLayer.importsMap,
+        )
       }
     }
     else {
@@ -70,8 +70,20 @@ export async function prepareConfiguration(
   }
 
   if (lastLayer) {
-    mergeConfiguration(ctx, lastLayer.vuetifyOptions, root.vuetifyOptions)
+    mergeConfiguration(
+      (imp, impl) => ctx.imports.set(imp, impl),
+      lastLayer.vuetifyOptions,
+      root.vuetifyOptions,
+      root.importsMap,
+    )
     root.vuetifyOptions = lastLayer.vuetifyOptions
+  }
+  else {
+    extractImports(
+      (imp, impl) => ctx.imports.set(imp, impl),
+      root.vuetifyOptions,
+      root.importsMap,
+    )
   }
 
   for (const mod of inlineModules.reverse()) {
@@ -88,36 +100,18 @@ function hasLayerVuetifyConfiguration(
   return 'vuetify' in config
 }
 
-async function readFile(
-  path: string,
-  extensions = ['mts', 'ts', 'mjs', 'js'],
-): Promise<[path: string, content: string, type: 'js' | 'ts'] | undefined> {
-  for (const ext of extensions) {
-    const filePath = `${path}.${ext}`
-    try {
-      await fsp.access(filePath, fs.constants.R_OK)
-      return [
-        filePath,
-        await fsp.readFile(filePath, 'utf-8'),
-        ext === 'js' || ext === 'mjs' ? 'js' : 'ts',
-      ]
-    }
-    catch {}
-  }
-
-  return undefined
-}
-
 function generateDefaultVuetifyOptions(): VuetifyOptionsInfo<VuetifyOptions> {
   const module = parseModule(`export default {}`)
   return {
     mode: 'default',
     vuetifyOptions: getDefaultExportOptions(module),
     module,
+    importsMap: new Map(),
   }
 }
 
 async function loadExternalVuetifyConfiguration(
+  nuxt: Nuxt,
   path: string,
 ): Promise<VuetifyOptionsInfo<ExternalVuetifyOptions>> {
   const content = await fsp.readFile(path, 'utf-8')
@@ -127,13 +121,15 @@ async function loadExternalVuetifyConfiguration(
     mode: 'external',
     vuetifyOptions: getDefaultExportOptions(module),
     module,
+    importsMap: createImportMap(nuxt, path, module),
   }
 }
 
 async function detectExternalVuetifyConfiguration(
+  nuxt: Nuxt,
   root: string,
 ): Promise<VuetifyOptionsInfo<ExternalVuetifyOptions> | undefined> {
-  const content = await readFile(resolve(root, 'vuetify.config'))
+  const content = await readConfigurationFile(resolve(root, 'vuetify.config'))
   if (!content)
     return undefined
 
@@ -143,13 +139,15 @@ async function detectExternalVuetifyConfiguration(
     mode: 'external',
     vuetifyOptions: getDefaultExportOptions(module),
     module,
+    importsMap: createImportMap(nuxt, content[0], module),
   }
 }
 
 async function loadNuxtVuetifyConfiguration(
+  nuxt: Nuxt,
   root: string,
 ): Promise<VuetifyOptionsInfo<VuetifyOptions> | undefined> {
-  const content = await readFile(resolve(root, 'nuxt.config'))
+  const content = await readConfigurationFile(resolve(root, 'nuxt.config'))
   if (!content) {
     return generateDefaultVuetifyOptions()
   }
@@ -171,6 +169,7 @@ async function loadNuxtVuetifyConfiguration(
     mode: 'inline',
     module,
     vuetifyOptions,
+    importsMap: vuetifyOptions ? createImportMap(nuxt, content[0], module) : new Map(),
   }
 }
 
@@ -183,104 +182,8 @@ function mergeExternalOptions(external: VuetifyOptionsInfo<ExternalVuetifyOption
   return config !== false
 }
 
-function extractImports(ctx: VuetifyNuxtContext, obj: ProxifiedObject<any>) {
-  for (const [_, value] of Object.entries(obj)) {
-    if (!value.$ast?.type)
-      continue
-
-    if (value.$ast.type === 'Identifier') {
-      ctx.imports.add(value.$ast.name)
-      continue
-    }
-    if (value.$ast.type === 'MemberExpression') {
-      if (value.$ast.object.type === 'Identifier' && value.$ast.property.type === 'Identifier') {
-        ctx.imports.add(value.$ast.object.name)
-        continue
-      }
-    }
-    if (value.$ast.type === 'ObjectExpression') {
-      extractImports(ctx, value)
-    }
-  }
-}
-
-function mergeConfiguration(
-  ctx: VuetifyNuxtContext,
-  first: ProxifiedObject<any>,
-  last: ProxifiedObject<any>,
-) {
-  const seen = new Set<string>()
-  for (const [key, value] of Object.entries(last)) {
-    seen.add(key)
-    if (!value.$ast?.type) {
-      first[key] = value
-      continue
-    }
-    // import specifier => blueprint or date adapter for example
-    if (value.$ast.type === 'Identifier') {
-      // add the specifier to the imports
-      ctx.imports.add(value.$ast.name)
-      first[key] = value
-      continue
-    }
-    if (value.$ast.type === 'MemberExpression') {
-      if (value.$ast.object.type === 'Identifier' && value.$ast.property.type === 'Identifier') {
-        ctx.imports.add(value.$ast.object.name)
-        first[key] = value
-        continue
-      }
-    }
-    // we need to merge data only when both are objects
-    if (value.$ast.type === 'ObjectExpression') {
-      if (key in first) {
-        if (first[key].$ast.type === 'ObjectExpression') {
-          // merge the child object
-          mergeConfiguration(ctx, first[key], value)
-        }
-        else {
-          if (value.$ast) {
-            extractImports(ctx, value)
-          }
-          first[key] = value
-        }
-      }
-      else {
-        extractImports(ctx, value)
-        first[key] = value
-      }
-      continue
-    }
-    // in any other case we just replace the value
-    first[key] = value
-  }
-
-  // we need to traverse the first object to find any missing imports
-  for (const key of Object.keys(first)) {
-    if (seen.has(key))
-      continue
-
-    const value = first[key]
-    if (!value.$ast?.type) {
-      continue
-    }
-
-    if (value.$ast.type === 'Identifier') {
-      ctx.imports.add(value.$ast.name)
-      continue
-    }
-    if (value.$ast.type === 'MemberExpression') {
-      if (value.$ast.object.type === 'Identifier' && value.$ast.property.type === 'Identifier') {
-        ctx.imports.add(value.$ast.object.name)
-        continue
-      }
-    }
-    if (value.$ast.type === 'ObjectExpression') {
-      extractImports(ctx, value)
-    }
-  }
-}
-
 async function loadLayerConfiguration(
+  nuxt: Nuxt,
   root: string,
   ctx: VuetifyNuxtContext,
   vuetifyConfigurationFilesToWatch: Set<string>,
@@ -288,13 +191,13 @@ async function loadLayerConfiguration(
 ): Promise<VuetifyOptionsInfo<VuetifyOptions>> {
   let external: VuetifyOptionsInfo<ExternalVuetifyOptions> | undefined
   if (typeof vuetifyOptions === 'string') {
-    external = await loadExternalVuetifyConfiguration(vuetifyOptions)
+    external = await loadExternalVuetifyConfiguration(nuxt, vuetifyOptions)
     if (external) {
       vuetifyConfigurationFilesToWatch.add(vuetifyOptions)
     }
   }
   else {
-    external = await detectExternalVuetifyConfiguration(root)
+    external = await detectExternalVuetifyConfiguration(nuxt, root)
     if (external?.path) {
       vuetifyConfigurationFilesToWatch.add(external.path)
     }
@@ -306,23 +209,28 @@ async function loadLayerConfiguration(
 
   // load inline configuration from the nuxt.config file
   const inline = vuetifyOptions
-    ? await loadNuxtVuetifyConfiguration(root)
+    ? await loadNuxtVuetifyConfiguration(nuxt, root)
     : undefined
 
   if (!inline) {
     if (external) {
-      ctx.vuetifyOptionsModules.push(external.module)
+      ctx.vuetifyOptionsModules.push(external)
     }
     return mergeExternalOptions(external)
       ? external!
       : generateDefaultVuetifyOptions()
   }
 
-  ctx.vuetifyOptionsModules.push(inline.module)
+  ctx.vuetifyOptionsModules.push(inline)
 
   if (mergeExternalOptions(external)) {
-    ctx.vuetifyOptionsModules.push(external!.module)
-    mergeConfiguration(ctx, inline.vuetifyOptions, external!.vuetifyOptions)
+    ctx.vuetifyOptionsModules.push(external!)
+    mergeConfiguration(
+      (imp, impl) => ctx.imports.set(imp, impl),
+      inline.vuetifyOptions,
+      external!.vuetifyOptions,
+      external!.importsMap,
+    )
   }
 
   return inline
@@ -335,6 +243,7 @@ async function loadRootLayer(
   { vuetifyOptions }: VuetifyModuleOptions,
 ) {
   return await loadLayerConfiguration(
+    nuxt,
     nuxt.options.rootDir,
     ctx,
     vuetifyConfigurationFilesToWatch,
@@ -343,12 +252,14 @@ async function loadRootLayer(
 }
 
 async function loadLayer(
+  nuxt: Nuxt,
   ctx: VuetifyNuxtContext,
   layer: NuxtConfigLayer,
   vuetifyConfigurationFilesToWatch: Set<string>,
 ) {
   const config = layer.config
   return await loadLayerConfiguration(
+    nuxt,
     config.rootDir,
     ctx,
     vuetifyConfigurationFilesToWatch,

@@ -5,13 +5,15 @@
   "scripts": {
     "dev": "nuxi dev",
     "build": "nuxi build",
+    "prepare": "nuxi prepare",
     "generate": "nuxi generate"
   },
   "dependencies": {
     "@nuxtjs/i18n": "^10.1.0",
-    "@unvuetify/nuxt-i18n-utils": "https://pkg.pr.new/@unvuetify/nuxt-i18n-utils@cf1f6f3",
-    "@unvuetify/nuxt-utils": "https://pkg.pr.new/@unvuetify/nuxt-utils@cf1f6f3",
+    "@unvuetify/nuxt-i18n-utils": "https://pkg.pr.new/@unvuetify/nuxt-i18n-utils@a348008",
+    "@unvuetify/nuxt-utils": "https://pkg.pr.new/@unvuetify/nuxt-utils@a348008",
     "nuxt": "^4.1.2",
-    "vuetify": "^3.10.2"
+    "vuetify": "^3.10.2",
+    "vuetify-nuxt-module": "workspace:*"
   }
 }

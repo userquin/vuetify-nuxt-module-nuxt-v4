@@ -1,4 +1,4 @@
-import type { IconSetNameType, UnoCCSMdiIconSet } from '../types'
+import type { IconSetNameType, UnoCSSMdiIconSet } from '../types'
 
 export interface ResolvedIcons {
   enabled: boolean
@@ -7,7 +7,7 @@ export interface ResolvedIcons {
   unocssAliases: boolean
   unocssIconPrefix: string
   unocssIconCollection: string
-  unocssIcons: UnoCCSMdiIconSet
+  unocssIcons: UnoCSSMdiIconSet
   unocssAdditionalIcons: Record<string, string>
   defaultSet?: IconSetNameType
   sets: string[]

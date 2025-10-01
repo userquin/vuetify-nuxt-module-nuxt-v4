@@ -20,10 +20,25 @@ export function addVuetifyNuxtTemplates(
       getContents: () => generateVuetifyClientHintsConfiguration(ctx),
     })
   }
+
+  if (ctx.enableRules) {
+    addTemplate({
+      filename: `vuetify/${ctx.rulesConfiguration.fromLabs ? 'labs-' : ''}rules-configuration.mjs`,
+      write: true,
+      getContents: () => generateRulesConfiguration(ctx),
+    })
+  }
+}
+
+function generateRulesConfiguration(ctx: VuetifyNuxtContext) {
+  return `${ctx.rulesConfiguration.imports}
+export const rulesOptions = ${generateCode(ctx.rulesConfiguration.rulesOptions).code}
+`
 }
 
 function generateVuetifyConfiguration(ctx: VuetifyNuxtContext) {
-  return `${ctx.configurationImports}export function vuetifyConfiguration() {
+  return `${ctx.configurationImports}
+export function vuetifyConfiguration() {
   return ${generateCode(ctx.vuetifyOptions.vuetifyOptions).code}
 }
 `
@@ -33,6 +48,7 @@ function generateVuetifyClientHintsConfiguration(ctx: VuetifyNuxtContext) {
   const ssr = ctx.vuetifyOptions.vuetifyOptions.ssr
   const clientWidth = typeof ssr === 'boolean' ? undefined : ssr?.clientWidth
   const clientHeight = typeof ssr === 'boolean' ? undefined : ssr?.clientHeight
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const data: Record<string, any> = {
     reloadOnFirstRequest: ctx.ssrClientHints.reloadOnFirstRequest,
     viewportSize: ctx.ssrClientHints.viewportSize,

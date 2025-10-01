@@ -216,7 +216,7 @@ function collectClientHints(
       const cookieName = ssrClientHintsConfiguration.prefersColorSchemeOptions.cookieName
       const cookieValue = headers.cookie?.split(';').find(c => c.trim().startsWith(`${cookieName}=`))
       if (cookieValue) {
-        const value = cookieValue.split('=')?.[1].trim()
+        const value = cookieValue.split('=')?.[1]!.trim()
         if (ssrClientHintsConfiguration.prefersColorSchemeOptions.themeNames.includes(value)) {
           hints.colorSchemeFromCookie = value
           hints.firstRequest = false

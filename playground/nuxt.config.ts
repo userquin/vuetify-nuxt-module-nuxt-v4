@@ -1,11 +1,30 @@
+import { VuetifyComposables } from '@unvuetify/unimport-presets'
+
 export default defineNuxtConfig({
+  // extends: ['./layers/rules1'],
   modules: ['@nuxtjs/i18n', '../src/module'],
   ssr: true,
-  devtools: { enabled: true },
-  i18n: {
-    bundle: {
-      optimizeTranslationDirective: false,
+  imports: {
+    imports: [VuetifyComposables({})],
+    addons: {
+      vueDirectives: true,
     },
+  },
+  devtools: { enabled: true },
+  routeRules: {
+    '/no-ssr': { ssr: false },
+  },
+  features: {
+    devLogs: true,
+  },
+  nitro: {
+    esbuild: {
+      options: {
+        target: 'esnext',
+      },
+    },
+  },
+  i18n: {
     // if not using RTL, you can replace locales with codes only
     // locales: ['en', 'es', 'ar'],
     locales: [{
@@ -40,5 +59,6 @@ export default defineNuxtConfig({
         viewportSize: true,
       },
     },
+    enableVuetifyRules: true,
   },
 })

@@ -14,11 +14,14 @@ export function prepareIconsRuntime(
   if (icons === false)
     return
 
+  // use vuetify defaults => mdi icon font from cdn
   const options: IconsOptions = icons === true
     ? {
+        sets: ['mdi'],
         defaultSet: 'mdi',
       }
     : icons ?? {
+      sets: ['mdi'],
       defaultSet: 'mdi',
     }
 

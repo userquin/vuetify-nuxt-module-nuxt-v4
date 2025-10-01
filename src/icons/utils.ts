@@ -103,7 +103,7 @@ export function prepareIcons(
         faSvg.libraries = [[false, 'fas', '@fortawesome/free-solid-svg-icons']]
 
       for (const p in faSvg.libraries) {
-        const [_defaultExport, _name, library] = faSvg.libraries[p]
+        const [_defaultExport, _name, library] = faSvg.libraries[p]!
         if (!isPackageExists(library)) {
           faSvgExists = false
           logger.warn(`Missing library ${library} dependency, install it!`)
@@ -116,13 +116,13 @@ export function prepareIcons(
 
     if (faSvgExists) {
       resolvedIcons.aliasesImportPresent ||= defaultSet === 'fa-svg'
-      resolvedIcons.imports.push(`import {${defaultSet === 'fa-svg' ? 'aliases,' : ''}fa} from \'vuetify/iconsets/fa-svg\'`)
+      resolvedIcons.imports.push(`import {${defaultSet === 'fa-svg' ? 'aliases,' : ''}fa} from 'vuetify/iconsets/fa-svg'`)
       resolvedIcons.imports.push('import { library } from \'@fortawesome/fontawesome-svg-core\'')
       resolvedIcons.imports.push('import { FontAwesomeIcon } from \'@fortawesome/vue-fontawesome\'')
       resolvedIcons.imports.push('import { useNuxtApp } from \'#imports\'')
       resolvedIcons.svg.fa = ['useNuxtApp().vueApp.component(\'font-awesome-icon\', FontAwesomeIcon)']
       faSvg.libraries!.forEach(([defaultExport, name, library]) => {
-        resolvedIcons.imports.push(`import ${defaultExport ? name : `{${name}}`} from \'${library}\'`)
+        resolvedIcons.imports.push(`import ${defaultExport ? name : `{${name}}`} from '${library}'`)
         resolvedIcons.svg.fa!.push(`library.add(${name})`)
       })
       resolvedIcons.sets.push('fa')
@@ -140,9 +140,9 @@ export function prepareIcons(
     if (mdiSvgExists) {
       resolvedIcons.svg.mdi = true
       resolvedIcons.aliasesImportPresent ||= defaultSet === 'mdi-svg'
-      resolvedIcons.imports.push(`import {${defaultSet === 'mdi-svg' ? 'aliases,' : ''}mdi} from \'vuetify/iconsets/mdi-svg\'`)
+      resolvedIcons.imports.push(`import {${defaultSet === 'mdi-svg' ? 'aliases,' : ''}mdi} from 'vuetify/iconsets/mdi-svg'`)
       if (mdiSvg && mdiSvg.aliases) {
-        resolvedIcons.imports.push(`import {${Object.values(mdiSvg.aliases).join(',')}} from \'@mdi/js\'`)
+        resolvedIcons.imports.push(`import {${Object.values(mdiSvg.aliases).join(',')}} from '@mdi/js'`)
         Object.entries(mdiSvg.aliases).forEach(([alias, icon]) => {
           resolvedIcons.aliases.push(`${alias}: ${icon}`)
         })
@@ -164,10 +164,10 @@ export function prepareIcons(
 
   if (resolvedIcons.unocss) {
     if (resolvedIcons.defaultSet === 'unocss') {
-      resolvedIcons.imports.push(`import {aliases as unocssAliases,defaultSet,unocss} from \'#build/vuetify-icons/unocss\'`)
+      resolvedIcons.imports.push('import {aliases as unocssAliases,defaultSet,unocss} from \'#build/vuetify-icons/unocss\'')
     }
     else {
-      resolvedIcons.imports.push(`import {aliases as unocssAliases, unocss} from \'#build/vuetify-icons/unocss\'`)
+      resolvedIcons.imports.push('import {aliases as unocssAliases, unocss} from \'#build/vuetify-icons/unocss\'')
     }
   }
 

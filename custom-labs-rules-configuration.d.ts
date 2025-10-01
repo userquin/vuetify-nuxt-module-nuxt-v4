@@ -1,4 +1,12 @@
-import type { ExternalVuetifyOptions } from './dist/module.mjs'
+import type { RulesOptions as LabsRulesOptions } from 'vuetify/labs/rules'
 
-declare function defineVuetifyConfiguration(vuetifyOptions: ExternalVuetifyOptions): ExternalVuetifyOptions
-export { defineVuetifyConfiguration }
+export type { LabsRulesOptions }
+export interface ExternalLabsRulesOptions extends LabsRulesOptions {
+  /**
+   * Merge the rules from this module.
+   */
+  config: boolean
+}
+
+declare function defineVuetifyLabsRulesConfiguration(rulesOptions: ExternalLabsRulesOptions): ExternalLabsRulesOptions
+export { defineVuetifyLabsRulesConfiguration }

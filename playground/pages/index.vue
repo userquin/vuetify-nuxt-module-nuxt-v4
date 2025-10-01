@@ -1,18 +1,30 @@
 <script setup lang="ts">
 import { ssrClientHintsConfiguration } from '#build/vuetify/ssr-client-hints-configuration.mjs'
+import type { SubmitEventPromise } from 'vuetify'
 
 const { locales, t, locale } = useI18n()
 const { current } = useLocale()
 const { isRtl } = useRtl()
+useHotkey(
+  'shift+t',
+  (e) => {
+    console.log(e)
+  },
+  { event: 'keydown' },
+)
 
-const name = ref('')
-const hint = ref('')
+const name = shallowRef('')
+const hint = shallowRef('')
 const persistentHint = computed(() => hint.value.trim().length > 0)
 
 const ssrClientHints = useNuxtApp().$ssrClientHints
 const { width, height, md } = useDisplay()
 const theme = useTheme()
 
+const clicks = shallowRef(0)
+function onClick() {
+  clicks.value = clicks.value + 1
+}
 const enableToogleTheme = computed(() => {
   if (ssrClientHintsConfiguration.prefersColorScheme && ssrClientHintsConfiguration.prefersColorSchemeOptions)
     return !ssrClientHintsConfiguration.prefersColorSchemeOptions.useBrowserThemeOnly
@@ -34,6 +46,12 @@ function onChanged(name?: string) {
     hint.value = ''
 }
 
+async function submit(event: SubmitEventPromise) {
+  const { valid, errors } = await event
+
+  console.log('submit:', valid, errors)
+}
+
 // don't use current, dir will not be updated
 watch([locale, name], ([, nn]) => {
   onChanged(nn)
@@ -44,7 +62,14 @@ watch([locale, name], ([, nn]) => {
   <v-container fill-height>
     <v-row dense>
       <v-col cols="12">
-        <v-img src="~/assets/logo.svg" width="48" height="48" />
+        <NuxtLink to="/no-ssr">
+          Go To No-SSR Page
+        </NuxtLink>
+        <v-img
+          src="~/assets/logo.svg"
+          width="48"
+          height="48"
+        />
         <div dir="auto">
           <h2>SSR Client Hints Headers:</h2>
           <pre class="text-body-2">{{ ssrClientHints }}</pre>
@@ -53,7 +78,10 @@ watch([locale, name], ([, nn]) => {
           <pre>{{ width }} x {{ height }} (md {{ md }}?)</pre>
           <div>
             <h2>useTheme: {{ theme.global.name }}</h2>
-            <v-btn v-if="enableToogleTheme" @click="toogleTheme">
+            <v-btn
+              v-if="enableToogleTheme"
+              @click="toogleTheme"
+            >
               toogle theme
             </v-btn>
           </div>
@@ -90,17 +118,28 @@ watch([locale, name], ([, nn]) => {
           <LocaleButton />
         </v-locale-provider>
       </v-col>
-      <v-col cols="12">
-        <v-text-field
-          v-model="name"
-          autofocus
-          density="compact"
-          clearable
-          :placeholder="$t('hi')"
-          :hint="hint"
-          :persistent-hint="persistentHint"
-          @click:clear="() => onChanged('')"
-        />
+      <v-col
+        v-click-outside="{ handler: onClick }"
+        cols="12"
+      >
+        Click outside the form: {{ clicks }}
+        <v-form
+          validate-on="submit"
+          @submit.prevent="submit"
+        >
+          <v-text-field
+            v-model="name"
+            autofocus
+            density="compact"
+            clearable
+            :placeholder="$t('hi')"
+            :hint="hint"
+            :persistent-hint="persistentHint"
+            :rules="['required', 'pinCode2']"
+            autocomplete="off"
+            @click:clear="() => onChanged('')"
+          />
+        </v-form>
       </v-col>
       <v-col cols="12">
         <v-select

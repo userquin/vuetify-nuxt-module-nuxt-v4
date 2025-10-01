@@ -24,8 +24,7 @@ SOFTWARE.
 
 import process from 'node:process'
 
-export type DetectedInfoType =
-  | 'browser'
+export type DetectedInfoType = 'browser'
   | 'node'
   | 'bot-device'
   | 'bot'
@@ -90,8 +89,7 @@ implements DetectedInfo<'react-native', 'react-native', null, null> {
   public readonly os: null = null
 }
 
-export type Browser =
-  | 'aol'
+export type Browser = 'aol'
   | 'arc'
   | 'brave'
   | 'edge'
@@ -123,8 +121,7 @@ export type Browser =
   | 'ios-webview'
   | 'curl'
   | 'searchbot'
-export type OperatingSystem =
-  | 'iOS'
+export type OperatingSystem = 'iOS'
   | 'Android OS'
   | 'BlackBerry OS'
   | 'Windows Mobile'
@@ -233,7 +230,7 @@ const operatingSystemRules: OperatingSystemRule[] = [
   ['QNX', /QNX/],
   ['BeOS', /BeOS/],
   ['OS/2', /OS\/2/],
-]
+] as const
 
 export function detect(
   userAgent?: string,
@@ -324,7 +321,7 @@ export function parseUserAgent(
 
 export function detectOS(ua: string): OperatingSystem | null {
   for (let ii = 0, count = operatingSystemRules.length; ii < count; ii++) {
-    const [os, regex] = operatingSystemRules[ii]
+    const [os, regex] = operatingSystemRules[ii]!
     const match = regex.exec(ua)
     if (match)
       return os

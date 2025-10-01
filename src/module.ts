@@ -34,6 +34,16 @@ export interface ModuleRuntimeHooks {
   'vuetify:before-create': (options: {
     vuetifyOptions: VuetifyOptions
   }) => HookResult
+  /**
+   * Use the following import in your Nuxt Client plugin to access rules configuration if you want to modify it:
+   * ```ts
+   * import { rulesOptions } from '#build/vuetify/labs-rules-configuration.mjs'
+   * ```
+   *
+   * This will change when `vuetify/labs/rules` moved outside labs to:
+   * `import { rulesOptions } from '#build/vuetify/rules-configuration.mjs'`
+   */
+  'vuetify:register-client-rules-plugin': (vuetify: ReturnType<typeof createVuetify>) => Promise<boolean> | boolean
   'vuetify:ready': (vuetify: ReturnType<typeof createVuetify>) => HookResult
   'vuetify:ssr-client-hints': (options: {
     vuetifyOptions: VuetifyOptions
@@ -49,7 +59,7 @@ export default defineNuxtModule<ModuleOptions>({
     name: 'vuetify-nuxt-module',
     configKey: 'vuetify',
     compatibility: {
-      nuxt: '>=4.1.0',
+      nuxt: '>=4.0.0',
     },
     version,
   },
@@ -57,6 +67,7 @@ export default defineNuxtModule<ModuleOptions>({
   defaults: () => ({
     vuetifyOptions: {},
     moduleOptions: {},
+    enableVuetifyRules: false,
   }),
   async setup(options, nuxt) {
     if (isNuxtMajorVersion(2, nuxt))
@@ -68,8 +79,16 @@ export default defineNuxtModule<ModuleOptions>({
       moduleOptions: undefined!,
       vuetifyOptions: undefined!,
       vuetifyOptionsModules: [],
-      imports: new Set(),
+      imports: new Map(),
       configurationImports: '',
+      enableRules: options.enableVuetifyRules === true,
+      rulesConfiguration: {
+        fromLabs: true,
+        rulesImports: new Map(),
+        imports: '',
+        externalRules: [],
+        rulesOptions: undefined!,
+      },
       vuetifyFilesToWatch: [],
       isDev: nuxt.options.dev,
       i18n: hasNuxtModule('@nuxtjs/i18n', nuxt),
@@ -98,6 +117,7 @@ export default defineNuxtModule<ModuleOptions>({
     }
 
     nuxt.hook('modules:done', async () => {
+      console.log(`${CONFIG_KEY} module setup v${version}`)
       // load configuration
       await load(options, nuxt, ctx)
 

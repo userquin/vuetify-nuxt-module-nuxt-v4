@@ -1,5 +1,5 @@
 /* eslint-disable @stylistic/semi */
-function defineVuetifyRulesConfiguration(rulesOptions) {
+function defineVuetifyLabsRulesConfiguration(rulesOptions) {
   return rulesOptions;
 }
-export { /* @__PURE__ */ defineVuetifyRulesConfiguration };
+export { /* @__PURE__ */ defineVuetifyLabsRulesConfiguration };
