@@ -25,12 +25,12 @@ The new configuration using `AsyncGenerators` to load the configuration files, c
 
 ## Playgrounds
 
-You can play here with the playground workspace (latest Nuxt 4 with Nuxt 3 layout):
-- `pnpm install --fronze-lockfile`
+You can play here with the playground workspace (latest Nuxt 4 with Nuxt 3 layout), run the following commands from the root folder:
+- `pnpm install --frozen-lockfile`
 - `pnpm dev:prepare` to prepare the playground
 - `pnpm dev` to start the Nuxt development server
 
 You can also play with [this Nuxt 4 playground repository](https://github.com/userquin/vuetify-nuxt-module-nuxt-v4-playground) with latest Nuxt 4 layout, using local `vuetify-nuxt-module-1.0.0.tgz` file from this repository (`pnpm install --fronze-lockfile && pnpm pack`) and `pkg-pr-new` dependencies from [this PR](https://github.com/userquin/unvuetify-monorepo/pull/51) at `@unvuetify-monorepo` (will be merged and released a new version soon):
-- `pnpm install --fronze-lockfile`
+- `pnpm install --frozen-lockfile`
 - `pnpm dev:prepare` to prepare the playground
 - `pnpm dev` to start the Nuxt development server
