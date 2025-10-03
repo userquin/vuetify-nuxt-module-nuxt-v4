@@ -7,6 +7,7 @@ import { buildVuetifyClientHintsConfiguration, SSRClientHintsConfigurationDefini
 export async function addVuetifyNuxtTemplates(
   nuxt: Nuxt,
   ctx: VuetifyNuxtContext,
+  fromWatcher = false,
 ) {
   if (!ctx.tsdownInstalled) {
     addTypeTemplate({
@@ -70,7 +71,7 @@ declare module '#vuetify/rules-configuration.mjs' {
     return
   }
 
-  await import('./nuxt-tsdown-templates').then(({ generateTSDownNuxtTemplates }) => generateTSDownNuxtTemplates(nuxt, ctx))
+  await import('./nuxt-tsdown-templates').then(({ generateTSDownNuxtTemplates }) => generateTSDownNuxtTemplates(nuxt, ctx, fromWatcher))
 }
 
 function generateRulesConfiguration(ctx: VuetifyNuxtContext) {

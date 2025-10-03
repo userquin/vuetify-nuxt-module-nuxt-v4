@@ -69,6 +69,7 @@ export async function loadConfiguration(
       ctx,
       options,
       inlineModules,
+      vuetifyConfigurationFilesToWatch,
     )
   ) {
     // vuetify options
@@ -454,6 +455,7 @@ async function* readConfiguration(
   ctx: VuetifyNuxtContext,
   options: VuetifyModuleOptions,
   inlineModules: MOptions[],
+  vuetifyConfigurationFilesToWatch: Set<string>,
 ): AsyncGenerator<VuetifyConfiguration, undefined, void> {
   let configuration: VuetifyConfiguration
   const layers = nuxt.options._layers.length
@@ -474,6 +476,10 @@ async function* readConfiguration(
         true,
       )
       if (vuetifyOptionsConfiguration) {
+        const path = vuetifyOptionsConfiguration.path
+        if (path) {
+          vuetifyConfigurationFilesToWatch.add(path)
+        }
         configuration.vuetifyOptions.push(vuetifyOptionsConfiguration)
       }
     }
@@ -487,6 +493,10 @@ async function* readConfiguration(
         false,
       )
       if (vuetifyOptionsConfiguration) {
+        const path = vuetifyOptionsConfiguration.path
+        if (path) {
+          vuetifyConfigurationFilesToWatch.add(path)
+        }
         configuration.vuetifyOptions.unshift(vuetifyOptionsConfiguration)
       }
     }
@@ -495,9 +505,14 @@ async function* readConfiguration(
         nuxt,
         resolve(layer.config.rootDir, 'vuetify.rules'),
       )
+      const path = configuration.rulesOptions?.path
+      if (path) {
+        vuetifyConfigurationFilesToWatch.add(path)
+      }
     }
     yield configuration
   }
+
   configuration = { vuetifyOptions: [] }
   const { vuetifyOptions } = options
   if (typeof vuetifyOptions === 'object') {
@@ -507,6 +522,10 @@ async function* readConfiguration(
       true,
     )
     if (vuetifyOptionsConfiguration) {
+      const path = vuetifyOptionsConfiguration.path
+      if (path) {
+        vuetifyConfigurationFilesToWatch.add(path)
+      }
       configuration.vuetifyOptions.push(vuetifyOptionsConfiguration)
     }
   }
@@ -520,6 +539,10 @@ async function* readConfiguration(
       false,
     )
     if (vuetifyOptionsConfiguration) {
+      const path = vuetifyOptionsConfiguration.path
+      if (path) {
+        vuetifyConfigurationFilesToWatch.add(path)
+      }
       configuration.vuetifyOptions.unshift(vuetifyOptionsConfiguration)
     }
   }
@@ -529,6 +552,10 @@ async function* readConfiguration(
       nuxt,
       resolve(nuxt.options.rootDir, 'vuetify.rules'),
     )
+    const path = configuration.rulesOptions?.path
+    if (path) {
+      ctx.vuetifyFilesToWatch.push(path)
+    }
   }
 
   yield configuration

@@ -74,7 +74,7 @@ export default defineNuxtModule<ModuleOptions>({
     if (isNuxtMajorVersion(2, nuxt))
       logger.error(`This module doesn't support nuxt version: ${getNuxtVersion(nuxt)}`)
 
-    const tsdownInstalled = options.moduleOptions?.experimental?.tsdown && isPackageExists('tsdown')
+    const tsdownInstalled = options.moduleOptions?.experimental?.tsdown === true && isPackageExists('tsdown')
 
     const ctx: VuetifyNuxtContext = {
       resolver: createResolver(import.meta.url),
@@ -100,6 +100,20 @@ export default defineNuxtModule<ModuleOptions>({
       ssrClientHints: undefined!,
       sources: [],
       tsdownInstalled,
+      virtualModules: {
+        options: {
+          js: '',
+          dts: '',
+        },
+        rules: {
+          js: '',
+          dts: '',
+        },
+        ssr: {
+          js: '',
+          dts: '',
+        },
+      },
     }
 
     // configure Vuetify:

@@ -47,6 +47,20 @@ export interface VuetifyNuxtContext {
   icons: ResolvedIcons
   ssrClientHints: ResolvedClientHints
   tsdownInstalled: boolean
+  virtualModules: {
+    options: {
+      js: string
+      dts: string
+    }
+    rules: {
+      js: string
+      dts: string
+    }
+    ssr: {
+      js: string
+      dts: string
+    }
+  }
 }
 
 export async function load(
