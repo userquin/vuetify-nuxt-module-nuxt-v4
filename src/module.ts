@@ -21,6 +21,7 @@ import { prepareNuxtRuntime } from './nuxt-runtime'
 import { addVuetifyNuxtTemplates } from './nuxt-templates'
 import { prepareSSRClientHints } from './ssr-client-hints'
 import { registerWatcher } from './watcher'
+import { isPackageExists } from 'local-pkg'
 
 export type * from './types'
 
@@ -73,12 +74,13 @@ export default defineNuxtModule<ModuleOptions>({
     if (isNuxtMajorVersion(2, nuxt))
       logger.error(`This module doesn't support nuxt version: ${getNuxtVersion(nuxt)}`)
 
+    const tsdownInstalled = options.moduleOptions?.experimental?.tsdown && isPackageExists('tsdown')
+
     const ctx: VuetifyNuxtContext = {
       resolver: createResolver(import.meta.url),
       logger,
       moduleOptions: undefined!,
       vuetifyOptions: undefined!,
-      vuetifyOptionsModules: [],
       imports: new Map(),
       configurationImports: '',
       enableRules: options.enableVuetifyRules === true,
@@ -86,7 +88,6 @@ export default defineNuxtModule<ModuleOptions>({
         fromLabs: true,
         rulesImports: new Map(),
         imports: '',
-        externalRules: [],
         rulesOptions: undefined!,
       },
       vuetifyFilesToWatch: [],
@@ -98,6 +99,7 @@ export default defineNuxtModule<ModuleOptions>({
       icons: undefined!,
       ssrClientHints: undefined!,
       sources: [],
+      tsdownInstalled,
     }
 
     // configure Vuetify:
@@ -125,7 +127,7 @@ export default defineNuxtModule<ModuleOptions>({
     // prepare Nuxt configuration templates
     // - HTTP Client Hints configuration
     // - Vuetify configuration
-    addVuetifyNuxtTemplates(nuxt, ctx)
+    await addVuetifyNuxtTemplates(nuxt, ctx)
 
     // prepare Nuxt runtime
     // - inline styles

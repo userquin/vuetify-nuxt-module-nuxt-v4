@@ -82,7 +82,7 @@ export function registerWatcher(
         enforce: 'pre',
         async handleHotUpdate({ file, modules, server }) {
           console.log(modules.map(m => [m.id, m.file] as const))
-          /* if (ctx.vuetifyFilesToWatch.includes(file)) {
+          if (ctx.vuetifyFilesToWatch.includes(file)) {
             for (const mod of modules) {
               server.moduleGraph.invalidateModule(mod)
               await server.reloadModule(mod)
@@ -90,10 +90,10 @@ export function registerWatcher(
             server.ws.send({ type: 'full-reload' })
             return []
           }
-          return [] */
-          if (hmrReload && ctx.vuetifyFilesToWatch.includes(file)) {
-            return await hmrReload.reload()
-          }
+          return []
+          // if (hmrReload && ctx.vuetifyFilesToWatch.includes(file)) {
+          //   return await hmrReload.reload()
+          // }
         },
       })
     }

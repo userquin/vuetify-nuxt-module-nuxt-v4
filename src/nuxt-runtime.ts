@@ -18,10 +18,11 @@ export async function prepareNuxtRuntime(
   // transpile always vuetify and runtime folder
   nuxt.options.build.transpile.push(CONFIG_KEY)
   nuxt.options.build.transpile.push(runtimeDir)
-  nuxt.options.build.transpile.push('#build/vuetify/configuration.mjs')
-  if (ctx.enableRules) {
-    nuxt.options.build.transpile.push(`'#build/vuetify/${ctx.rulesConfiguration.fromLabs ? 'labs-' : ''}rules-configuration.mjs'`)
-  }
+  nuxt.options.build.transpile.push(/^#build\/vuetify\//)
+  // nuxt.options.build.transpile.push('#build/vuetify/configuration.mjs')
+  // if (ctx.enableRules) {
+  //   nuxt.options.build.transpile.push(`'#build/vuetify/${ctx.rulesConfiguration.fromLabs ? 'labs-' : ''}rules-configuration.mjs'`)
+  // }
 
   if (typeof ctx.moduleOptions.styles?.mode === 'undefined' || ctx.moduleOptions.styles.mode === true) {
     nuxt.options.css ??= []
@@ -30,11 +31,11 @@ export async function prepareNuxtRuntime(
   }
 
   nuxt.hook('prepare:types', ({ nodeReferences, references }) => {
-    nodeReferences.push({ types: 'vuetify-nuxt-module/custom-configuration' })
+    // nodeReferences.push({ types: 'vuetify-nuxt-module/custom-configuration' })
     if (ctx.enableRules) {
       nodeReferences.push({ types: `vuetify-nuxt-module/custom-${ctx.rulesConfiguration.fromLabs ? 'labs-' : ''}rules-configuration` })
     }
-    references.push({ types: 'vuetify-nuxt-module/configuration' })
+    // references.push({ types: 'vuetify-nuxt-module/configuration' })
     references.push({ path: ctx.resolver.resolve(runtimeDir, 'plugins/types') })
   })
 
@@ -102,7 +103,7 @@ function addVuetifyNuxtPlugin(
       if (mode === 'client' && ctx.enableRules) {
         rulesImports = [
           '',
-          `import { rulesOptions } from '#build/vuetify/${ctx.rulesConfiguration.fromLabs ? 'labs-' : ''}rules-configuration.mjs'`,
+          `import { rulesOptions } from '#build/vuetify/rules-configuration.mjs'`,
           `import { createRulesPlugin } from 'vuetify/${ctx.rulesConfiguration.fromLabs ? 'labs/' : ''}rules'`,
         ].join('\n')
         rulesPlugin = [

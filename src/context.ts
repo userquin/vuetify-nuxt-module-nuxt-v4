@@ -6,26 +6,10 @@ import type { ResolvedIcons } from './icons/types'
 import type { ResolvedClientHints } from './ssr-client-hints'
 import type { MOptions, VuetifyModuleOptions } from './types'
 import { normalize } from 'pathe'
-// import { prepareConfiguration } from './prepare-configuration'
-// import { prepareRulesConfiguration } from './prepare-rules-configuration'
-// import { generateCode } from 'magicast'
 import { loadConfiguration } from './load-configuration'
+import type { Import } from './load-configuration'
 
 export const CONFIG_KEY = 'vuetify'
-
-export interface Import {
-  from: string
-  local: string
-  imported: string
-}
-
-export interface VuetifyOptionsInfo<T extends VuetifyOptions> {
-  path?: string
-  mode: 'default' | 'inline' | 'external'
-  vuetifyOptions: ProxifiedObject<T>
-  module: ProxifiedModule
-  importsMap: Map<string, Import>
-}
 
 export interface VuetifyRules {
   aliases?: { [name: string]: unknown }
@@ -43,8 +27,7 @@ export interface VuetifyNuxtContext {
   resolver: Resolver
   logger: ReturnType<typeof import('@nuxt/kit')['useLogger']>
   moduleOptions: MOptions
-  vuetifyOptions: VuetifyOptionsInfo<VuetifyOptions>
-  vuetifyOptionsModules: VuetifyOptionsInfo<VuetifyOptions>[]
+  vuetifyOptions: ProxifiedObject<VuetifyOptions>
   imports: Map<string, Import>
   configurationImports: string
   enableRules: boolean
@@ -52,7 +35,6 @@ export interface VuetifyNuxtContext {
     fromLabs: boolean
     rulesImports: Map<string, Import>
     imports: string
-    externalRules: VuetifyRulesInfo[]
     rulesOptions: ProxifiedObject<VuetifyRules>
   }
   vuetifyFilesToWatch: string[]
@@ -64,6 +46,7 @@ export interface VuetifyNuxtContext {
   unocss: boolean
   icons: ResolvedIcons
   ssrClientHints: ResolvedClientHints
+  tsdownInstalled: boolean
 }
 
 export async function load(
@@ -72,7 +55,6 @@ export async function load(
   ctx: VuetifyNuxtContext,
 ) {
   ctx.imports.clear()
-  ctx.vuetifyOptionsModules = []
   ctx.vuetifyFilesToWatch = []
   ctx.configurationImports = ''
   ctx.rulesConfiguration.rulesImports.clear()

@@ -300,6 +300,10 @@ export interface MOptions extends VuetifyNuxtOptions {
      */
     prefersReducedMotion?: boolean
   }
+
+  experimental?: {
+    tsdown?: boolean
+  }
 }
 
 export interface VuetifyModuleOptions {

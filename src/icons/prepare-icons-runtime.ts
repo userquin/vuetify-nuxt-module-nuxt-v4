@@ -32,7 +32,7 @@ export function prepareIconsRuntime(
     // CDN and local icon fonts support
     registerIconFonts(nuxt, resolvedOptions/* , ctx.icons */)
 
-    resolvedOptions.registerIconsPlugin = !!ctx.vuetifyOptions.vuetifyOptions.icons?.$ast
+    resolvedOptions.registerIconsPlugin = !!ctx.vuetifyOptions.icons?.$ast
     if (resolvedOptions.registerIconsPlugin) {
       addPluginTemplate({
         write: true,

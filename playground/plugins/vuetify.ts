@@ -1,3 +1,5 @@
+import { vuetifyConfiguration } from '#build/vuetify/configuration.mjs'
+
 export default defineNuxtPlugin((nuxtApp) => {
   nuxtApp.hook('vuetify:before-create', ({ vuetifyOptions }) => {
     console.log('vuetify:before-create', vuetifyOptions.theme)

@@ -10,6 +10,7 @@ const theme: VuetifyOptions['theme'] = {
       dark: true,
     },
   },
+  variations: false,
 }
 
 export { theme }
