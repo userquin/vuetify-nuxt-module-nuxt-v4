@@ -8,6 +8,7 @@ import fsp from 'node:fs/promises'
 import fs from 'node:fs'
 import defu from 'defu'
 import { dirname, normalize, relative as relativePath, resolve } from 'pathe'
+import { prepareIconsOptions } from './icons'
 
 export interface Import {
   from: string
@@ -127,6 +128,8 @@ export async function loadConfiguration(
 
   ctx.configurationImports = configurationImports
   ctx.rulesConfiguration.imports = rulesConfigurationImports
+
+  await prepareIconsOptions(ctx)
 }
 
 async function* checkModules(

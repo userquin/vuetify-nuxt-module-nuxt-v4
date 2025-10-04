@@ -74,7 +74,8 @@ export default defineNuxtModule<ModuleOptions>({
     if (isNuxtMajorVersion(2, nuxt))
       logger.error(`This module doesn't support nuxt version: ${getNuxtVersion(nuxt)}`)
 
-    const tsdownInstalled = options.moduleOptions?.experimental?.tsdown === true && isPackageExists('tsdown')
+    const tsdownEnabled = options.moduleOptions?.experimental?.tsdown === true && isPackageExists('tsdown')
+    const unocssInstalled = hasNuxtModule('@unocss/nuxt')
 
     const ctx: VuetifyNuxtContext = {
       resolver: createResolver(import.meta.url),
@@ -95,11 +96,12 @@ export default defineNuxtModule<ModuleOptions>({
       i18n: hasNuxtModule('@nuxtjs/i18n', nuxt),
       isSSR: nuxt.options.ssr,
       isNuxtGenerate: !!nuxt.options.nitro.static,
-      unocss: hasNuxtModule('@unocss/nuxt', nuxt),
+      unocss: unocssInstalled,
+      unocssInstalled,
       icons: undefined!,
       ssrClientHints: undefined!,
       sources: [],
-      tsdownInstalled,
+      tsdownEnabled,
       virtualModules: {
         options: {
           js: '',
@@ -110,6 +112,10 @@ export default defineNuxtModule<ModuleOptions>({
           dts: '',
         },
         ssr: {
+          js: '',
+          dts: '',
+        },
+        unocss: {
           js: '',
           dts: '',
         },

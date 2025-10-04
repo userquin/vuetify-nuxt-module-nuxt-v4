@@ -2,7 +2,7 @@ import { VuetifyComposables } from '@unvuetify/unimport-presets'
 
 export default defineNuxtConfig({
   // extends: ['./layers/rules1'],
-  modules: ['@nuxtjs/i18n', '../src/module'],
+  modules: ['@unocss/nuxt', '@nuxtjs/i18n', '../src/module'],
   ssr: true,
   imports: {
     imports: [VuetifyComposables({})],
@@ -17,6 +17,7 @@ export default defineNuxtConfig({
   features: {
     devLogs: true,
   },
+  compatibilityDate: '2025-10-04',
   nitro: {
     esbuild: {
       options: {

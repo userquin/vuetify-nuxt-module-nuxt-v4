@@ -2,7 +2,7 @@ import type { Nuxt } from '@nuxt/schema'
 import type { VuetifyNuxtContext } from './context'
 import { addPlugin, addPluginTemplate } from '@nuxt/kit'
 import { CONFIG_KEY } from './context'
-import { prepareIconsRuntime } from './icons/prepare-icons-runtime'
+import { registerIconFonts } from './icons'
 
 export async function prepareNuxtRuntime(
   nuxt: Nuxt,
@@ -19,10 +19,6 @@ export async function prepareNuxtRuntime(
   nuxt.options.build.transpile.push(CONFIG_KEY)
   nuxt.options.build.transpile.push(runtimeDir)
   nuxt.options.build.transpile.push(/^#build\/vuetify\//)
-  // nuxt.options.build.transpile.push('#build/vuetify/configuration.mjs')
-  // if (ctx.enableRules) {
-  //   nuxt.options.build.transpile.push(`'#build/vuetify/${ctx.rulesConfiguration.fromLabs ? 'labs-' : ''}rules-configuration.mjs'`)
-  // }
 
   if (typeof ctx.moduleOptions.styles?.mode === 'undefined' || ctx.moduleOptions.styles.mode === true) {
     nuxt.options.css ??= []
@@ -30,16 +26,15 @@ export async function prepareNuxtRuntime(
     nuxt.options.css.unshift('vuetify/styles')
   }
 
+  registerIconFonts(nuxt, ctx.icons)
+
   nuxt.hook('prepare:types', ({ nodeReferences, references }) => {
-    // nodeReferences.push({ types: 'vuetify-nuxt-module/custom-configuration' })
+    nodeReferences.push({ types: 'vuetify-nuxt-module/custom-configuration' })
     if (ctx.enableRules) {
       nodeReferences.push({ types: `vuetify-nuxt-module/custom-${ctx.rulesConfiguration.fromLabs ? 'labs-' : ''}rules-configuration` })
     }
-    // references.push({ types: 'vuetify-nuxt-module/configuration' })
     references.push({ path: ctx.resolver.resolve(runtimeDir, 'plugins/types') })
   })
-
-  prepareIconsRuntime(nuxt, ctx)
 
   if (ctx.i18n) {
     addPlugin({
@@ -77,10 +72,6 @@ function addVuetifyNuxtPlugin(
     mode,
     getContents() {
       const dependsOn = [] as import('#app').NuxtAppLiterals['pluginName'][]
-      if (ctx.icons.registerIconsPlugin) {
-        // @ts-expect-error missing at build time
-        dependsOn.push('vuetify:icons:plugin')
-      }
       if (ctx.i18n) {
         // @ts-expect-error missing at build time
         dependsOn.push('vuetify:i18n:plugin')

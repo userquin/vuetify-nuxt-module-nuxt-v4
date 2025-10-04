@@ -1,4 +1,5 @@
 import { aliases, defaultSet, unocss } from '#build/vuetify/iconsets/unocss.mjs'
+import { aliases as mdiAliases, mdi } from 'vuetify/iconsets/mdi'
 // import LuxonAdapter from '@date-io/luxon'
 import { defineVuetifyConfiguration } from 'vuetify-nuxt-module/custom-configuration'
 // import * as bp from 'vuetify/blueprints'
@@ -22,11 +23,17 @@ export default defineVuetifyConfiguration({
   // date: {
   //   adapter: LuxonAdapter,
   // },
-  icons: {
+  /* icons: {
     defaultSet,
     sets: { unocss },
     aliases,
+  }, */
+  icons: {
+    defaultSet: 'mdi',
+    sets: { mdi },
+    aliases: mdiAliases,
   },
+  fontIcons: [['mdi']],
   blueprint: /* bp. */md3,
   theme,
   /* theme: {

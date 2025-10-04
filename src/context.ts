@@ -1,10 +1,9 @@
 import type { Resolver } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
 import type { ProxifiedModule, ProxifiedObject } from 'magicast'
-import type { VuetifyOptions } from 'vuetify'
-import type { ResolvedIcons } from './icons/types'
+import type { ResolvedIcons } from './icons'
 import type { ResolvedClientHints } from './ssr-client-hints'
-import type { MOptions, VuetifyModuleOptions } from './types'
+import type { ExtendedNuxtVuetifyOptions, MOptions, VuetifyModuleOptions } from './types'
 import { normalize } from 'pathe'
 import { loadConfiguration } from './load-configuration'
 import type { Import } from './load-configuration'
@@ -27,7 +26,7 @@ export interface VuetifyNuxtContext {
   resolver: Resolver
   logger: ReturnType<typeof import('@nuxt/kit')['useLogger']>
   moduleOptions: MOptions
-  vuetifyOptions: ProxifiedObject<VuetifyOptions>
+  vuetifyOptions: ProxifiedObject<ExtendedNuxtVuetifyOptions>
   imports: Map<string, Import>
   configurationImports: string
   enableRules: boolean
@@ -44,9 +43,10 @@ export interface VuetifyNuxtContext {
   isNuxtGenerate: boolean
   sources: [rootDir: string, isFile: boolean, sources: string[]][]
   unocss: boolean
+  unocssInstalled: boolean
   icons: ResolvedIcons
   ssrClientHints: ResolvedClientHints
-  tsdownInstalled: boolean
+  tsdownEnabled: boolean
   virtualModules: {
     options: {
       js: string
@@ -57,6 +57,10 @@ export interface VuetifyNuxtContext {
       dts: string
     }
     ssr: {
+      js: string
+      dts: string
+    }
+    unocss: {
       js: string
       dts: string
     }

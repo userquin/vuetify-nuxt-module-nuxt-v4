@@ -6,8 +6,8 @@ import { pinCode2 } from './vuetify-rules'
 const pinCode: ValidationRuleBuilderWithoutOptions = (err) => {
   return v => (/^\d{4}$/.test(v)) || err || 'Field must contain a 4-digit PIN'
 }
-const pinCode3 = { x: 2 } satisfies { x: number }
-const pinCode4 = { x: 2 } as const
+// const pinCode3 = { x: 2 } satisfies { x: number }
+// const pinCode4 = { x: 2 } as const
 export default defineVuetifyLabsRulesConfiguration({
   config: true,
   aliases: {

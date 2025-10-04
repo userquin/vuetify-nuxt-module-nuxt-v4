@@ -32,6 +32,7 @@
     "prepack": "nuxt-module-build build",
     "dev": "pnpm dev:prepare && cd playground && pnpm dev",
     "dev:build": "cd playground && pnpm build",
+    "dev:run:node": "cd playground &&  node .output/server/index.mjs",
     "dev:prepare": "nuxt-module-build build --stub && nuxt-module-build prepare && cd playground && pnpm prepare",
     "release": "pnpm lint && pnpm test && pnpm prepack && changelogen --release && npm publish && git push --follow-tags",
     "lint": "eslint .",
@@ -60,12 +61,14 @@
     "vuetify": "^3.9.0"
   },
   "devDependencies": {
+    "@iconify-json/mdi": "^1.2.3",
     "@nuxt/devtools": "^2.6.3",
     "@nuxt/eslint-config": "^1.9.0",
     "@nuxt/module-builder": "^1.0.2",
     "@nuxt/schema": "^4.1.2",
     "@nuxt/test-utils": "^3.19.2",
     "@types/node": "latest",
+    "@unocss/nuxt": "^66.5.2",
     "changelogen": "^0.6.2",
     "eslint": "^9.35.0",
     "nuxt": "^4.1.2",

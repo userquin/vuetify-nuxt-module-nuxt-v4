@@ -6,6 +6,43 @@ import { debounce } from 'perfect-debounce'
 import { load } from './context'
 import { addVuetifyNuxtTemplates } from './nuxt-templates'
 
+export function registerWatcher(
+  options: VuetifyModuleOptions,
+  nuxt: Nuxt,
+  ctx: VuetifyNuxtContext,
+) {
+  if (ctx.isDev && ctx.vuetifyFilesToWatch.length > 0) {
+    let isReloading = false
+    const debouncedReload = debounce(async () => {
+      if (isReloading) {
+        return
+      }
+      isReloading = true
+      try {
+        await load(options, nuxt, ctx)
+        await addVuetifyNuxtTemplates(nuxt, ctx, true)
+        await updateTemplates({
+          filter: template => template.filename.startsWith('vuetify/'),
+        })
+      }
+      finally {
+        isReloading = false
+      }
+    }, 150)
+
+    addVitePlugin({
+      name: 'vuetify:configuration:watch',
+      enforce: 'pre',
+      handleHotUpdate({ file }) {
+        if (ctx.vuetifyFilesToWatch.includes(file)) {
+          debouncedReload()
+        }
+      },
+    })
+  }
+}
+
+/*
 interface HmrLoader {
   reload: () => Promise<any>
   client?: (() => Promise<any>) | undefined
@@ -54,3 +91,4 @@ export function registerWatcher(
     })
   }
 }
+*/

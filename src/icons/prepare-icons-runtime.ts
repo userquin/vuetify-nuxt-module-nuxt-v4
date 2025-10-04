@@ -1,7 +1,7 @@
 import type { Nuxt } from '@nuxt/schema'
 import type { VuetifyNuxtContext } from '../context'
 import type { IconsOptions } from '../types'
-import { addPluginTemplate } from '@nuxt/kit'
+// import { addPluginTemplate } from '@nuxt/kit'
 import { registerIconFonts } from './font'
 import { prepareUnoCSSIconSet } from './unocss'
 import { prepareIcons } from './utils'
@@ -32,7 +32,7 @@ export function prepareIconsRuntime(
     // CDN and local icon fonts support
     registerIconFonts(nuxt, resolvedOptions/* , ctx.icons */)
 
-    resolvedOptions.registerIconsPlugin = !!ctx.vuetifyOptions.icons?.$ast
+    /* resolvedOptions.registerIconsPlugin = !!ctx.vuetifyOptions.icons?.$ast
     if (resolvedOptions.registerIconsPlugin) {
       addPluginTemplate({
         write: true,
@@ -52,7 +52,7 @@ export default defineNuxtPlugin({
 `
         },
       })
-    }
+    } */
   }
 
   ctx.icons = resolvedOptions
