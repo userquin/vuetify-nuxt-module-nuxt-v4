@@ -21,6 +21,7 @@ import { prepareNuxtRuntime } from './nuxt-runtime'
 import { addVuetifyNuxtTemplates } from './nuxt-templates'
 import { prepareSSRClientHints } from './ssr-client-hints'
 import { registerWatcher } from './watcher'
+import { isPackageExists } from 'local-pkg'
 
 export type * from './types'
 
@@ -73,12 +74,14 @@ export default defineNuxtModule<ModuleOptions>({
     if (isNuxtMajorVersion(2, nuxt))
       logger.error(`This module doesn't support nuxt version: ${getNuxtVersion(nuxt)}`)
 
+    const tsdownEnabled = options.moduleOptions?.experimental?.tsdown === true && isPackageExists('tsdown')
+    const unocssInstalled = hasNuxtModule('@unocss/nuxt')
+
     const ctx: VuetifyNuxtContext = {
       resolver: createResolver(import.meta.url),
       logger,
       moduleOptions: undefined!,
       vuetifyOptions: undefined!,
-      vuetifyOptionsModules: [],
       imports: new Map(),
       configurationImports: '',
       enableRules: options.enableVuetifyRules === true,
@@ -86,7 +89,6 @@ export default defineNuxtModule<ModuleOptions>({
         fromLabs: true,
         rulesImports: new Map(),
         imports: '',
-        externalRules: [],
         rulesOptions: undefined!,
       },
       vuetifyFilesToWatch: [],
@@ -94,10 +96,30 @@ export default defineNuxtModule<ModuleOptions>({
       i18n: hasNuxtModule('@nuxtjs/i18n', nuxt),
       isSSR: nuxt.options.ssr,
       isNuxtGenerate: !!nuxt.options.nitro.static,
-      unocss: hasNuxtModule('@unocss/nuxt', nuxt),
+      unocss: unocssInstalled,
+      unocssInstalled,
       icons: undefined!,
       ssrClientHints: undefined!,
       sources: [],
+      tsdownEnabled,
+      virtualModules: {
+        options: {
+          js: '',
+          dts: '',
+        },
+        rules: {
+          js: '',
+          dts: '',
+        },
+        ssr: {
+          js: '',
+          dts: '',
+        },
+        unocss: {
+          js: '',
+          dts: '',
+        },
+      },
     }
 
     // configure Vuetify:
@@ -122,11 +144,6 @@ export default defineNuxtModule<ModuleOptions>({
     // configure HTTP Client Hints
     prepareSSRClientHints(nuxt, ctx)
 
-    // prepare Nuxt configuration templates
-    // - HTTP Client Hints configuration
-    // - Vuetify configuration
-    addVuetifyNuxtTemplates(nuxt, ctx)
-
     // prepare Nuxt runtime
     // - inline styles
     // - add types
@@ -136,9 +153,13 @@ export default defineNuxtModule<ModuleOptions>({
 
     // register watcher to avoid Nuxt restarts
     registerWatcher(options, nuxt, ctx)
-    /*
+
+    // when all modules are ready
     nuxt.hook('modules:done', async () => {
+      // prepare Nuxt configuration templates
+      // - HTTP Client Hints configuration
+      // - Vuetify configuration
+      await addVuetifyNuxtTemplates(nuxt, ctx)
     })
-*/
   },
 })

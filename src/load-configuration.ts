@@ -8,6 +8,16 @@ import fsp from 'node:fs/promises'
 import fs from 'node:fs'
 import defu from 'defu'
 import { dirname, normalize, relative as relativePath, resolve } from 'pathe'
+import { prepareIconsOptions } from './icons'
+
+export interface Import {
+  from: string
+  local: string
+  imported: string
+  relative: boolean
+  filePathWithExtension?: string
+  relativePath?: string
+}
 
 interface VuetifyRules {
   aliases?: { [name: string]: unknown }
@@ -15,13 +25,6 @@ interface VuetifyRules {
 
 interface ExternalVuetifyRules extends VuetifyRules {
   config: boolean
-}
-
-interface Import {
-  from: string
-  local: string
-  imported: string
-  relative: boolean
 }
 
 interface VuetifyOptionsConfiguration {
@@ -50,12 +53,10 @@ export async function loadConfiguration(
   // vuetify options
   const rootVuetifyOptionsModule = parseModule<VuetifyOptions>('export default {}')
   const rootVuetifyOptions = getDefaultExportOptions(rootVuetifyOptionsModule)
-  const rootVuetifyOptionsImportsMap = new Map<string, Import>()
   let firstVuetifyOptionsImportsMap: Map<string, Import> | undefined
   // vuetify rules options
   const rootVuetifyRulesModule = parseModule<VuetifyRules>('export default { aliases: {} }')
   const rootVuetifyRules = getDefaultExportOptions(rootVuetifyRulesModule)
-  const rootVuetifyRulesImportsMap = new Map<string, Import>()
   let firstVuetifyRulesImportsMap: Map<string, Import> | undefined
   const inlineModules: MOptions[] = []
   let moduleOptions: MOptions = {}
@@ -69,13 +70,14 @@ export async function loadConfiguration(
       ctx,
       options,
       inlineModules,
+      vuetifyConfigurationFilesToWatch,
     )
   ) {
     // vuetify options
     if (vuetifyOptions.length > 0) {
       for (const { configuration, importsMap } of vuetifyOptions) {
         mergeConfiguration(
-          (imp, impl) => rootVuetifyOptionsImportsMap.set(imp, impl),
+          (imp, impl) => ctx.imports.set(imp, impl),
           rootVuetifyOptions,
           firstVuetifyOptionsImportsMap ?? new Map(),
           configuration,
@@ -87,7 +89,7 @@ export async function loadConfiguration(
     // vuetify rules options
     if (rulesOptions) {
       mergeConfiguration(
-        (imp, impl) => rootVuetifyRulesImportsMap.set(imp, impl),
+        (imp, impl) => ctx.rulesConfiguration.rulesImports.set(imp, impl),
         rootVuetifyRules,
         firstVuetifyRulesImportsMap ?? new Map(),
         rulesOptions.configuration,
@@ -102,31 +104,32 @@ export async function loadConfiguration(
   }
 
   ctx.moduleOptions = defu(options.moduleOptions, moduleOptions)
-  ctx.vuetifyOptions = {
-    mode: undefined!,
-    importsMap: undefined!,
-    module: undefined!,
-    vuetifyOptions: rootVuetifyOptions,
-  }
+  ctx.vuetifyOptions = rootVuetifyOptions
   ctx.rulesConfiguration.rulesOptions = rootVuetifyRules
+
+  const vuetifyBuildDir = resolve(nuxt.options.buildDir, 'vuetify')
 
   const [configurationImports, rulesConfigurationImports] = await Promise.all([
     collectImports(
+      vuetifyBuildDir,
       nuxt,
       ctx,
-      rootVuetifyOptionsImportsMap,
+      ctx.imports,
       vuetifyConfigurationFilesToWatch,
     ),
     collectImports(
+      vuetifyBuildDir,
       nuxt,
       ctx,
-      rootVuetifyRulesImportsMap,
+      ctx.rulesConfiguration.rulesImports,
       vuetifyConfigurationFilesToWatch,
     ),
   ])
 
   ctx.configurationImports = configurationImports
   ctx.rulesConfiguration.imports = rulesConfigurationImports
+
+  await prepareIconsOptions(ctx)
 }
 
 async function* checkModules(
@@ -146,6 +149,7 @@ async function* checkModules(
 }
 
 async function collectImports(
+  vuetifyBuildDir: string,
   nuxt: Nuxt,
   ctx: VuetifyNuxtContext,
   globalImportMaps: Map<string, Import>,
@@ -153,12 +157,15 @@ async function collectImports(
 ) {
   const imports = new Map<string, string[]>()
 
-  for (const { local, imported, from, relative } of globalImportMaps.values()) {
+  for (const globalImport of globalImportMaps.values()) {
+    const { local, imported, from, relative } = globalImport
     let useFrom = from
     if (relative) {
-      useFrom = relativePath(resolve(nuxt.options.buildDir, 'vuetify'), from).replace(/\\/g, '/')
+      useFrom = relativePath(vuetifyBuildDir, from).replace(/\\/g, '/')
+      globalImport.relativePath = useFrom
       for await (const file of checkModules(from)) {
         vuetifyConfigurationFilesToWatch.add(file)
+        globalImport.filePathWithExtension = file
       }
     }
     let list = imports.get(useFrom)
@@ -451,6 +458,7 @@ async function* readConfiguration(
   ctx: VuetifyNuxtContext,
   options: VuetifyModuleOptions,
   inlineModules: MOptions[],
+  vuetifyConfigurationFilesToWatch: Set<string>,
 ): AsyncGenerator<VuetifyConfiguration, undefined, void> {
   let configuration: VuetifyConfiguration
   const layers = nuxt.options._layers.length
@@ -471,6 +479,10 @@ async function* readConfiguration(
         true,
       )
       if (vuetifyOptionsConfiguration) {
+        const path = vuetifyOptionsConfiguration.path
+        if (path) {
+          vuetifyConfigurationFilesToWatch.add(path)
+        }
         configuration.vuetifyOptions.push(vuetifyOptionsConfiguration)
       }
     }
@@ -484,6 +496,10 @@ async function* readConfiguration(
         false,
       )
       if (vuetifyOptionsConfiguration) {
+        const path = vuetifyOptionsConfiguration.path
+        if (path) {
+          vuetifyConfigurationFilesToWatch.add(path)
+        }
         configuration.vuetifyOptions.unshift(vuetifyOptionsConfiguration)
       }
     }
@@ -492,9 +508,14 @@ async function* readConfiguration(
         nuxt,
         resolve(layer.config.rootDir, 'vuetify.rules'),
       )
+      const path = configuration.rulesOptions?.path
+      if (path) {
+        vuetifyConfigurationFilesToWatch.add(path)
+      }
     }
     yield configuration
   }
+
   configuration = { vuetifyOptions: [] }
   const { vuetifyOptions } = options
   if (typeof vuetifyOptions === 'object') {
@@ -504,6 +525,10 @@ async function* readConfiguration(
       true,
     )
     if (vuetifyOptionsConfiguration) {
+      const path = vuetifyOptionsConfiguration.path
+      if (path) {
+        vuetifyConfigurationFilesToWatch.add(path)
+      }
       configuration.vuetifyOptions.push(vuetifyOptionsConfiguration)
     }
   }
@@ -517,6 +542,10 @@ async function* readConfiguration(
       false,
     )
     if (vuetifyOptionsConfiguration) {
+      const path = vuetifyOptionsConfiguration.path
+      if (path) {
+        vuetifyConfigurationFilesToWatch.add(path)
+      }
       configuration.vuetifyOptions.unshift(vuetifyOptionsConfiguration)
     }
   }
@@ -526,6 +555,10 @@ async function* readConfiguration(
       nuxt,
       resolve(nuxt.options.rootDir, 'vuetify.rules'),
     )
+    const path = configuration.rulesOptions?.path
+    if (path) {
+      ctx.vuetifyFilesToWatch.push(path)
+    }
   }
 
   yield configuration
