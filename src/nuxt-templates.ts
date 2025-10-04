@@ -93,7 +93,7 @@ declare module '#build/vuetify/iconsets/unocss.mjs' {
   export { aliases, defaultSet, unocss };
 }
 `,
-    })
+    }, { shared: true })
 
     addTemplate({
       write: true,

@@ -105,11 +105,17 @@ function* collectPluginEntries(ctx: VuetifyNuxtContext): Generator<[
   }
 }
 
+type TemplateContext = {
+  nitro?: boolean
+  nuxt?: boolean
+  node?: boolean
+  shared?: boolean
+}
 const TEMPLATE_NAMES = {
-  unocss: ['unocss.mjs', 'unocss.d.ts', 'iconsets/'],
-  options: ['configuration.mjs', 'configuration.d.ts', ''],
-  rules: ['rules-configuration.mjs', 'rules-configuration.d.ts', ''],
-  ssr: ['ssr-client-hints-configuration.mjs', 'ssr-client-hints-configuration.d.ts', ''],
+  unocss: ['unocss.mjs', 'unocss.d.ts', 'iconsets/', { shared: true } as TemplateContext],
+  options: ['configuration.mjs', 'configuration.d.ts', '', { shared: true } as TemplateContext],
+  rules: ['rules-configuration.mjs', 'rules-configuration.d.ts', '', { nuxt: true } as TemplateContext],
+  ssr: ['ssr-client-hints-configuration.mjs', 'ssr-client-hints-configuration.d.ts', '', { shared: true } as TemplateContext],
 } as const
 
 async function prepareVuetifyTemplates(
@@ -145,7 +151,7 @@ async function prepareVuetifyTemplates(
       filename: `vuetify/${prefix}${TEMPLATE_NAMES[templateName][1]}`,
       write: true,
       getContents: () => ctx.virtualModules[templateName].dts,
-    })
+    }, TEMPLATE_NAMES[templateName][3])
     addTemplate({
       filename: `vuetify/${prefix}${TEMPLATE_NAMES[templateName][0]}`,
       write: true,
@@ -160,7 +166,8 @@ async function prepareVuetifyTemplates(
   else {
     const dts = ctx.virtualModules[templateName]['dts']
     const js = ctx.virtualModules[templateName]['js']
-    await Promise.all(TEMPLATE_NAMES[templateName].slice(0, 2).map(async (file) => {
+    const files = [TEMPLATE_NAMES[templateName][0], TEMPLATE_NAMES[templateName][1]]
+    await Promise.all(files.map(async (file) => {
       await fsPromises.mkdir(dirname(file), { recursive: true })
       let content
       if (file.endsWith('.d.ts')) {
