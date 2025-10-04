@@ -106,6 +106,9 @@ importers:
       '@iconify-json/mdi':
         specifier: ^1.2.3
         version: 1.2.3
+      typescript:
+        specifier: ~5.9.2
+        version: 5.9.2
 
 packages:
 

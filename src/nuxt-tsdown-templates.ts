@@ -43,9 +43,10 @@ export async function generateTSDownNuxtTemplates(
   console.time('vuetify:tsdown')
   await build({
     cwd,
-    tsconfig: resolve(nuxt.options.rootDir, './tsconfig.json'),
+    tsconfig: resolve(nuxt.options.build ? cwd : nuxt.options.rootDir, 'tsconfig.json'),
     outDir: buildDir,
     format: 'esm',
+    platform: 'neutral',
     clean: false,
     entry,
     dts: {

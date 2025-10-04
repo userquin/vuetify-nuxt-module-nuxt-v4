@@ -23,17 +23,17 @@ export default defineVuetifyConfiguration({
   // date: {
   //   adapter: LuxonAdapter,
   // },
-  /* icons: {
+  icons: {
     defaultSet,
     sets: { unocss },
     aliases,
-  }, */
-  icons: {
+  },
+  /* icons: {
     defaultSet: 'mdi',
     sets: { mdi },
     aliases: mdiAliases,
   },
-  fontIcons: [['mdi']],
+  fontIcons: [['mdi']], */
   blueprint: /* bp. */md3,
   theme,
   /* theme: {

@@ -144,11 +144,6 @@ export default defineNuxtModule<ModuleOptions>({
     // configure HTTP Client Hints
     prepareSSRClientHints(nuxt, ctx)
 
-    // prepare Nuxt configuration templates
-    // - HTTP Client Hints configuration
-    // - Vuetify configuration
-    await addVuetifyNuxtTemplates(nuxt, ctx)
-
     // prepare Nuxt runtime
     // - inline styles
     // - add types
@@ -158,9 +153,13 @@ export default defineNuxtModule<ModuleOptions>({
 
     // register watcher to avoid Nuxt restarts
     registerWatcher(options, nuxt, ctx)
-    /*
+
+    // when all modules are ready
     nuxt.hook('modules:done', async () => {
+      // prepare Nuxt configuration templates
+      // - HTTP Client Hints configuration
+      // - Vuetify configuration
+      await addVuetifyNuxtTemplates(nuxt, ctx)
     })
-*/
   },
 })

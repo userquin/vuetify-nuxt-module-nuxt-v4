@@ -18,6 +18,7 @@
     "vuetify-nuxt-module": "workspace:*"
   },
   "devDependencies": {
-    "@iconify-json/mdi": "^1.2.3"
+    "@iconify-json/mdi": "^1.2.3",
+    "typescript": "~5.9.2"
   }
 }
