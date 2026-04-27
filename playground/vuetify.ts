@@ -1,6 +1,6 @@
 import type { VuetifyOptions } from 'vuetify'
 
-const theme: VuetifyOptions['theme'] = {
+const theme = {
   defaultTheme: 'light',
   themes: {
     light: {
@@ -10,7 +10,8 @@ const theme: VuetifyOptions['theme'] = {
       dark: true,
     },
   },
-}
+  variations: false,
+} satisfies VuetifyOptions['theme']
 
 export { theme }
 export default theme

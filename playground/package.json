@@ -10,10 +10,15 @@
   },
   "dependencies": {
     "@nuxtjs/i18n": "^10.1.0",
+    "@unocss/nuxt": "^66.5.2",
     "@unvuetify/nuxt-i18n-utils": "https://pkg.pr.new/@unvuetify/nuxt-i18n-utils@a348008",
     "@unvuetify/nuxt-utils": "https://pkg.pr.new/@unvuetify/nuxt-utils@a348008",
     "nuxt": "^4.1.2",
     "vuetify": "^3.10.2",
     "vuetify-nuxt-module": "workspace:*"
+  },
+  "devDependencies": {
+    "@iconify-json/mdi": "^1.2.3",
+    "typescript": "~5.9.2"
   }
 }

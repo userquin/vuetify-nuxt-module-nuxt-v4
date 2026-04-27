@@ -1,31 +1,14 @@
 import type { Resolver } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
 import type { ProxifiedModule, ProxifiedObject } from 'magicast'
-import type { VuetifyOptions } from 'vuetify'
-import type { ResolvedIcons } from './icons/types'
+import type { ResolvedIcons } from './icons'
 import type { ResolvedClientHints } from './ssr-client-hints'
-import type { MOptions, VuetifyModuleOptions } from './types'
+import type { ExtendedNuxtVuetifyOptions, MOptions, VuetifyModuleOptions } from './types'
 import { normalize } from 'pathe'
-// import { prepareConfiguration } from './prepare-configuration'
-// import { prepareRulesConfiguration } from './prepare-rules-configuration'
-// import { generateCode } from 'magicast'
 import { loadConfiguration } from './load-configuration'
+import type { Import } from './load-configuration'
 
 export const CONFIG_KEY = 'vuetify'
-
-export interface Import {
-  from: string
-  local: string
-  imported: string
-}
-
-export interface VuetifyOptionsInfo<T extends VuetifyOptions> {
-  path?: string
-  mode: 'default' | 'inline' | 'external'
-  vuetifyOptions: ProxifiedObject<T>
-  module: ProxifiedModule
-  importsMap: Map<string, Import>
-}
 
 export interface VuetifyRules {
   aliases?: { [name: string]: unknown }
@@ -39,12 +22,16 @@ export interface VuetifyRulesInfo {
   importsMap: Map<string, Import>
 }
 
+export interface TemplatesOptions {
+  js: string
+  dts: string
+}
+
 export interface VuetifyNuxtContext {
   resolver: Resolver
   logger: ReturnType<typeof import('@nuxt/kit')['useLogger']>
   moduleOptions: MOptions
-  vuetifyOptions: VuetifyOptionsInfo<VuetifyOptions>
-  vuetifyOptionsModules: VuetifyOptionsInfo<VuetifyOptions>[]
+  vuetifyOptions: ProxifiedObject<ExtendedNuxtVuetifyOptions>
   imports: Map<string, Import>
   configurationImports: string
   enableRules: boolean
@@ -52,7 +39,6 @@ export interface VuetifyNuxtContext {
     fromLabs: boolean
     rulesImports: Map<string, Import>
     imports: string
-    externalRules: VuetifyRulesInfo[]
     rulesOptions: ProxifiedObject<VuetifyRules>
   }
   vuetifyFilesToWatch: string[]
@@ -62,8 +48,29 @@ export interface VuetifyNuxtContext {
   isNuxtGenerate: boolean
   sources: [rootDir: string, isFile: boolean, sources: string[]][]
   unocss: boolean
+  unocssInstalled: boolean
   icons: ResolvedIcons
   ssrClientHints: ResolvedClientHints
+  tsdownEnabled: boolean
+  tsdownPromise: Promise<void>
+  virtualModules: {
+    options: {
+      js: string
+      dts: string
+    }
+    rules: {
+      js: string
+      dts: string
+    }
+    ssr: {
+      js: string
+      dts: string
+    }
+    unocss: {
+      js: string
+      dts: string
+    }
+  }
 }
 
 export async function load(
@@ -72,7 +79,6 @@ export async function load(
   ctx: VuetifyNuxtContext,
 ) {
   ctx.imports.clear()
-  ctx.vuetifyOptionsModules = []
   ctx.vuetifyFilesToWatch = []
   ctx.configurationImports = ''
   ctx.rulesConfiguration.rulesImports.clear()
@@ -262,4 +268,23 @@ export async function load(
     if (!/[\\/]node_modules[\\/]/.test(path))
       ctx.vuetifyFilesToWatch.push(path)
   }
+}
+
+export type DeferPromise<T = void> = Promise<T> & {
+  resolve: (value: T | PromiseLike<T>) => void
+  reject: (reason?: unknown) => void
+}
+
+export function createDefer<T>(): DeferPromise<T> {
+  let resolve: ((value: T | PromiseLike<T>) => void) | null = null
+  let reject: ((reason?: unknown) => void) | null = null
+
+  const p = new Promise<T>((_resolve, _reject) => {
+    resolve = _resolve
+    reject = _reject
+  }) as DeferPromise<T>
+
+  p.resolve = resolve!
+  p.reject = reject!
+  return p
 }

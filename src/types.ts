@@ -51,26 +51,9 @@ export interface SSRClientHintsConfiguration {
   }
 }
 
-export const IconSetName = ['mdi', 'fa', 'fa4', 'md', 'mdi-svg', 'fa-svg', 'unocss', 'custom'] as const
 export const IconFontName = ['mdi', 'fa', 'fa4', 'md'] as const
 
-export type IconSetNameType = typeof IconSetName[number]
 export type IconFontNameType = typeof IconFontName[number]
-
-export interface FontIconSet {
-  name: IconFontNameType
-  /**
-   * Use CDN?
-   *
-   * - mdi: https://cdn.jsdelivr.net/npm/@mdi/font@5.x/css/materialdesignicons.min.css
-   * - md:  https://fonts.googleapis.com/css?family=Material+Icons
-   * - fa:  https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@latest/css/all.min.css
-   * - fa4: https://cdn.jsdelivr.net/npm/font-awesome@4.x/css/font-awesome.min.css
-   *
-   * @default the corresponding CDN for the icon set
-   */
-  cdn?: string
-}
 
 export interface UnoCSSMdiIconSet {
   collapse?: string
@@ -128,25 +111,6 @@ export interface UnoCSSMdiIconSet {
   backspace?: string
 }
 
-export interface JSSVGIconSet {
-  aliases?: Record<string, string>
-}
-
-export interface FontAwesomeSvgIconSet {
-  /**
-   * The libraries to import and register with the corresponding name.
-   *
-   * For example, to import free svg icons, `libraries` should be (the default):
-   * `libraries: [[false, 'fas', '@fortawesome/free-solid-svg-icons']]
-   *
-   * Following with the example, the resulting import will be:
-   * `import { fas } from '@fortawesome/free-solid-svg-icons'`
-   *
-   * @default [[false, 'fas', '@fortawesome/free-solid-svg-icons']]
-   */
-  libraries?: [defaultExport: boolean, name: string, library: string][]
-}
-
 export interface UnoCSSIcons {
   /**
    * The prefix for UnoCSS Preset Icons.
@@ -175,53 +139,38 @@ export interface UnoCSSIcons {
 
 export interface IconsOptions {
   /**
-   * @default 'mdi'
-   */
-  defaultSet: IconSetNameType
-  /**
    * UnoCSS options.
    */
   unocss?: UnoCSSIcons
   /**
-   * The icon sets to use.
+   * CSS Icon Fonts.
+   *
+   * By default, the module will add the corresponding CDN link to Nuxt `css` entry:
+   * - mdi: https://cdn.jsdelivr.net/npm/@mdi/font@5.x/css/materialdesignicons.min.css
+   * - md:  https://fonts.googleapis.com/css?family=Material+Icons
+   * - fa:  https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@latest/css/all.min.css
+   * - fa4: https://cdn.jsdelivr.net/npm/font-awesome@4.x/css/font-awesome.min.css
+   *
+   * You can specify a custom CDN link.
    */
-  sets?: IconFontNameType | IconFontNameType[] | FontIconSet[]
+  fontIcons?: [name: IconFontNameType, cdn?: string][]
   /**
-   * The SVG icon sets to use.
+   * Local Icon Fonts to use.
    */
-  svg?: {
-    mdi?: JSSVGIconSet
-    fa?: FontAwesomeSvgIconSet
-  }
+  localFontIcons?: IconFontNameType[]
+  /**
+   * Enabling this option will check for local installed icon fonts and will add them to Nuxt `css` entry:
+   * - mdi: will check for `@mdi/font`, if present will add `@mdi/font/css/materialdesignicons.css`
+   * - md: will check for `material-design-icons-iconfont`, if present will add  `@mdi/font/css/materialdesignicons.css`
+   * - fa: will check for `@fortawesome/fontawesome-free`, if present will add  `@fortawesome/fontawesome-free/css/all.css`
+   * - fa4: will check for `font-awesome@4.7.0`, if present will add  `font-awesome/css/font-awesome.min.css`
+   *
+   * @default false
+   */
+  autoInstallLocalFontIcons?: boolean
 }
 
 export interface MOptions extends VuetifyNuxtOptions {
-  /**
-   * The icon sets to use.
-   *
-   * By default, the module will check for the following icon sets:
-   * - `mdi` (Material Design Icons)
-   * - `fa` (Font Awesome)
-   * - `fa4` (Font Awesome 4)
-   * - `md` (Material Design Font Icons)
-   * - `mdi-svg` (Material Design SVG Icons)
-   * - `fa-svg` (Font Awesome SVG)
-   * - `unocss` (UnoCSS Icons, Material Design Icons by default)
-   *
-   * If you want to provide your own configuration, set this option to `false`.
-   *
-   * This module will export the icon sets using `#build/vuetify/iconsets/icons.js` virtual module,
-   * including all the icon sets with a custom component: the module will omit the last step if
-   * `defaultSet` is set to `custom`, or if the `icons` option is found in the Vuetify configuration
-   * file.
-   *
-   * You can also provide your own configuration letting this module generate the icon sets for you,
-   * then use `custom` in the `defaultSet` icons option, all the icon sets can be imported via
-   * the corresponding virtual module; `#build/vuetify-icons/<icon-set-name>`.
-   *
-   * @default true
-   */
-  icons?: boolean | IconsOptions
   /**
    * Vuetify SSR client hints.
    *
@@ -300,6 +249,67 @@ export interface MOptions extends VuetifyNuxtOptions {
      */
     prefersReducedMotion?: boolean
   }
+
+  experimental?: {
+    tsdown?: boolean
+  }
+}
+
+/**
+ * Nuxt extension for Vuetify options.
+ *
+ * If you are using [font icons](https://vuetifyjs.com/en/features/icon-fonts/):
+ * - make sure to configure the `icons` option in the Vuetify configuration file
+ * - use the `fontIcons`, `localFontIcons` or `autoInstallLocalFontIcons` options to add the corresponding css file to the Nuxt `css` entry
+ * - don't import the css file in the configuration file, let the module handle it for you
+ *
+ * ```ts
+ * // vuetify.config.ts
+ * import { aliases, mdi } from 'vuetify/iconsets/mdi'
+ * import { defineVuetifyConfiguration } from 'vuetify-nuxt-module/custom-configuration'
+ *
+ * export default defineVuetifyConfiguration({
+ *   config: true,
+ *   icons: {
+ *     defaultSet: 'mdi',
+ *     sets: { mdi },
+ *     aliases
+ *   },
+ *   fontIcons: [['mdi']] // <== using the default CDN link for mdi
+ * })
+ * ```
+ *
+ * If you are using [SVG icons](https://vuetifyjs.com/en/features/icon-fonts/#svg-icons), add the logic in your Vuetify configuration file.
+ *
+ * If you are using UnoCSS icon set:
+ * - you can import the `unocss` icon set from `#build/vuetify/iconsets/unocss.mjs`
+ * - use it in the `icons` option in your Vuetify configuration file
+ *
+ * You can customize the icons using the `unocss` option in the Vuetify configuration file:
+ * - `unocss.prefix`: The prefix for UnoCSS Preset Icons. Default is `i-`
+ * - `unocss.collection`: The collection name for UnoCSS Preset Icons. Default is `mdi`
+ * - `unocss.icons`: Override the default mdi icons.
+ * - `unocss.additionalIcons`: Additional icons to be added to the set.
+ *
+ * ```ts
+ * // vuetify.config.ts
+ * import { aliases, defaultSet, unocss } from '#build/vuetify/iconsets/unocss.mjs'
+ * import { defineVuetifyConfiguration } from 'vuetify-nuxt-module/custom-configuration'
+ *
+ * export default defineVuetifyConfiguration({
+ *   config: true,
+ *   icons: {
+ *     defaultSet,
+ *     sets: { unocss },
+ *     aliases
+ *   }
+ * })
+ * ```
+ *
+ * @see https://vuetifyjs.com/en/features/icon-fonts/
+ * @see https://vuetifyjs.com/en/features/icon-fonts/#svg-icons
+ */
+export interface ExtendedNuxtVuetifyOptions extends VuetifyOptions, IconsOptions {
 }
 
 export interface VuetifyModuleOptions {
@@ -312,7 +322,7 @@ export interface VuetifyModuleOptions {
    *
    * The path should be relative to the root folder.
    */
-  vuetifyOptions?: string | VuetifyOptions
+  vuetifyOptions?: string | ExtendedNuxtVuetifyOptions
 
   /**
    * Vuetify Rules options.
@@ -330,7 +340,7 @@ export interface VuetifyModuleOptions {
   enableVuetifyRules?: boolean
 }
 
-export interface ExternalVuetifyOptions extends VuetifyOptions {
+export interface ExternalVuetifyOptions extends ExtendedNuxtVuetifyOptions {
   /**
    * Should this configuration file be merged with the existing configuration?
    *

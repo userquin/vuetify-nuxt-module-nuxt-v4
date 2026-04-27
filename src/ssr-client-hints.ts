@@ -27,6 +27,25 @@ const disabledClientHints: ResolvedClientHints = Object.freeze({
   prefersReducedMotion: false,
 })
 
+export const SSRClientHintsConfigurationDefinition = `export interface SSRClientHintsConfiguration {
+  reloadOnFirstRequest: boolean
+  viewportSize: boolean
+  prefersColorScheme: boolean
+  prefersReducedMotion: boolean
+  clientWidth?: number
+  clientHeight?: number
+  prefersColorSchemeOptions?: {
+    baseUrl: string
+    defaultTheme: string
+    themeNames: string[]
+    cookieName: string
+    darkThemeName: string
+    lightThemeName: string
+    useBrowserThemeOnly: boolean
+  }
+}
+`
+
 export function prepareSSRClientHints(
   nuxt: Nuxt,
   ctx: VuetifyNuxtContext,
@@ -91,8 +110,26 @@ export function prepareSSRClientHints(
   ctx.ssrClientHints = clientHints
 }
 
+export function buildVuetifyClientHintsConfiguration(ctx: VuetifyNuxtContext) {
+  const ssr = ctx.vuetifyOptions.ssr
+  const clientWidth = typeof ssr === 'boolean' ? undefined : ssr?.clientWidth
+  const clientHeight = typeof ssr === 'boolean' ? undefined : ssr?.clientHeight
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const data: Record<string, any> = {
+    reloadOnFirstRequest: ctx.ssrClientHints.reloadOnFirstRequest,
+    viewportSize: ctx.ssrClientHints.viewportSize,
+    prefersColorScheme: ctx.ssrClientHints.prefersColorScheme,
+    prefersReducedMotion: ctx.ssrClientHints.prefersReducedMotion,
+    clientWidth,
+    clientHeight,
+    prefersColorSchemeOptions: ctx.ssrClientHints.prefersColorSchemeOptions,
+  }
+
+  return data
+}
+
 function prepareTheme(ctx: VuetifyNuxtContext): VuetifyOptions['theme'] {
-  const theme = ctx.vuetifyOptions.vuetifyOptions.theme
+  const theme = ctx.vuetifyOptions.theme
   if (!theme) {
     throw new Error('Vuetify theme is disabled')
   }

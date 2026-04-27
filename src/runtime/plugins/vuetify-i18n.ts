@@ -4,7 +4,7 @@ import { configureVuetifyI18nAdapter, configureVuetifyI18nDateLocale } from '@un
 export default defineNuxtPlugin({
   name: 'vuetify:i18n:plugin',
   order: -25,
-  // @ts-expect-error i18n plugin missing on build time
+  // @ts-expect-error i18n plugin missing at build time
   dependsOn: ['i18n:plugin'],
   parallel: true,
   setup(nuxtApp) {
