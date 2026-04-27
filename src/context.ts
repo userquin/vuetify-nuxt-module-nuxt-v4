@@ -22,6 +22,11 @@ export interface VuetifyRulesInfo {
   importsMap: Map<string, Import>
 }
 
+export interface TemplatesOptions {
+  js: string
+  dts: string
+}
+
 export interface VuetifyNuxtContext {
   resolver: Resolver
   logger: ReturnType<typeof import('@nuxt/kit')['useLogger']>
@@ -47,6 +52,7 @@ export interface VuetifyNuxtContext {
   icons: ResolvedIcons
   ssrClientHints: ResolvedClientHints
   tsdownEnabled: boolean
+  tsdownPromise: Promise<void>
   virtualModules: {
     options: {
       js: string
@@ -262,4 +268,23 @@ export async function load(
     if (!/[\\/]node_modules[\\/]/.test(path))
       ctx.vuetifyFilesToWatch.push(path)
   }
+}
+
+export type DeferPromise<T = void> = Promise<T> & {
+  resolve: (value: T | PromiseLike<T>) => void
+  reject: (reason?: unknown) => void
+}
+
+export function createDefer<T>(): DeferPromise<T> {
+  let resolve: ((value: T | PromiseLike<T>) => void) | null = null
+  let reject: ((reason?: unknown) => void) | null = null
+
+  const p = new Promise<T>((_resolve, _reject) => {
+    resolve = _resolve
+    reject = _reject
+  }) as DeferPromise<T>
+
+  p.resolve = resolve!
+  p.reject = reject!
+  return p
 }

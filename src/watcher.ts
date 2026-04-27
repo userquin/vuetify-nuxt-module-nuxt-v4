@@ -12,22 +12,22 @@ export function registerWatcher(
   ctx: VuetifyNuxtContext,
 ) {
   if (ctx.isDev && ctx.vuetifyFilesToWatch.length > 0) {
-    let isReloading = false
+    // let isReloading = false
     const debouncedReload = debounce(async () => {
-      if (isReloading) {
+      /* if (isReloading) {
         return
       }
-      isReloading = true
-      try {
-        await load(options, nuxt, ctx)
-        await addVuetifyNuxtTemplates(nuxt, ctx, true)
-        await updateTemplates({
-          filter: template => template.filename.startsWith('vuetify/'),
-        })
-      }
-      finally {
-        isReloading = false
-      }
+      isReloading = true */
+      // try {
+      await load(options, nuxt, ctx)
+      await addVuetifyNuxtTemplates(nuxt, ctx, true)
+      await updateTemplates({
+        filter: template => template.filename.startsWith('vuetify/'),
+      })
+      // }
+      // finally {
+      //   isReloading = false
+      // }
     }, 150)
 
     addVitePlugin({

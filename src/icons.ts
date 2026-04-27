@@ -4,6 +4,7 @@ import type { VuetifyNuxtContext } from './context'
 import { IconFontName } from './types'
 import { isPackageExists } from 'local-pkg'
 import { generateCode } from 'magicast'
+import { updateAppConfig } from '#app/config'
 
 export interface ResolvedIcons {
   unocss?: {
@@ -241,6 +242,7 @@ export function registerIconFonts(
       nuxt.options.css = oldCss.filter(css => !oldLocalIcons.includes(css))
     }
   */
+
   // handle old stuff
   let links = nuxt.options.app.head?.link
   if (links) {

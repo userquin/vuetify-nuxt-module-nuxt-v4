@@ -41,15 +41,17 @@ export async function generateTSDownNuxtTemplates(
   const entries = [...collectPluginEntries(ctx)]
 
   console.time('vuetify:tsdown')
+  console.log(process.cwd())
   await build({
     cwd,
-    tsconfig: resolve(nuxt.options.build ? cwd : nuxt.options.rootDir, 'tsconfig.json'),
+    tsconfig: resolve(nuxt.options.rootDir, 'tsconfig.json'),
     outDir: buildDir,
     format: 'esm',
     platform: 'neutral',
     clean: false,
     entry,
     dts: {
+      cwd,
       compilerOptions: {
         paths: {
           '#build/vuetify/iconsets/unocss.mjs': [resolve(buildDir, `${TEMPLATE_NAMES.unocss[2]}/unocss.d.ts`)],
@@ -68,18 +70,15 @@ export async function generateTSDownNuxtTemplates(
         }),
       }),
     ],
-    hooks: {
-      'build:done': async () => {
-        await Promise.all([
-          prepareVuetifyTemplates(ctx, 'options', true, !fromWatcher, buildDir),
-          prepareVuetifyTemplates(ctx, 'rules', ctx.enableRules, !fromWatcher, buildDir),
-          prepareVuetifyTemplates(ctx, 'ssr', ctx.ssrClientHints.enabled, !fromWatcher, buildDir),
-          prepareVuetifyTemplates(ctx, 'unocss', !!ctx.icons.unocss, !fromWatcher, buildDir),
-        ])
-        console.timeEnd('vuetify:tsdown')
-      },
-    },
   })
+
+  await Promise.all([
+    prepareVuetifyTemplates(ctx, 'options', true, !fromWatcher, buildDir),
+    prepareVuetifyTemplates(ctx, 'rules', ctx.enableRules, !fromWatcher, buildDir),
+    prepareVuetifyTemplates(ctx, 'ssr', ctx.ssrClientHints.enabled, !fromWatcher, buildDir),
+    prepareVuetifyTemplates(ctx, 'unocss', !!ctx.icons.unocss, !fromWatcher, buildDir),
+  ])
+  console.timeEnd('vuetify:tsdown')
 }
 
 function* collectPluginEntries(ctx: VuetifyNuxtContext): Generator<[
@@ -106,17 +105,17 @@ function* collectPluginEntries(ctx: VuetifyNuxtContext): Generator<[
   }
 }
 
-type TemplateContext = {
+type TypeTemplateContext = {
   nitro?: boolean
   nuxt?: boolean
   node?: boolean
   shared?: boolean
 }
 const TEMPLATE_NAMES = {
-  unocss: ['unocss.mjs', 'unocss.d.ts', 'iconsets/', { shared: true } as TemplateContext],
-  options: ['configuration.mjs', 'configuration.d.ts', '', { shared: true } as TemplateContext],
-  rules: ['rules-configuration.mjs', 'rules-configuration.d.ts', '', { nuxt: true } as TemplateContext],
-  ssr: ['ssr-client-hints-configuration.mjs', 'ssr-client-hints-configuration.d.ts', '', { shared: true } as TemplateContext],
+  unocss: ['unocss.mjs', 'unocss.d.ts', 'iconsets/', { shared: true } as TypeTemplateContext],
+  options: ['configuration.mjs', 'configuration.d.ts', '', { shared: true } as TypeTemplateContext],
+  rules: ['rules-configuration.mjs', 'rules-configuration.d.ts', '', { shared: true } as TypeTemplateContext],
+  ssr: ['ssr-client-hints-configuration.mjs', 'ssr-client-hints-configuration.d.ts', '', { shared: true } as TypeTemplateContext],
 } as const
 
 async function prepareVuetifyTemplates(

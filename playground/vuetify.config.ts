@@ -5,7 +5,7 @@ import { defineVuetifyConfiguration } from 'vuetify-nuxt-module/custom-configura
 // import * as bp from 'vuetify/blueprints'
 import { md3 } from 'vuetify/blueprints'
 // import type { VuetifyOptions } from 'vuetify/framework'
-import { theme } from './vuetify'
+import { theme } from '~~/vuetify'
 /* const theme: VuetifyOptions['theme'] = {
   defaultTheme: 'dark',
   themes: {

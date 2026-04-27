@@ -60,7 +60,7 @@ export default defineNuxtConfig({
         viewportSize: true,
       },
       experimental: {
-        tsdown: true,
+        tsdown: false,
       },
     },
     enableVuetifyRules: true,
